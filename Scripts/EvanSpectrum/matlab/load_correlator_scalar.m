@@ -1,0 +1,79 @@
+% Bottle up loading the disconnected correlator into one quick operation!
+function [disc_sum disc_jack disc_cov_mat disc_err] = load_correlator_scalar(fname, fl_flavor, parse_Nt, parse_Ns, number_bl, blocksize)
+	
+
+    [realops config_nums_pbp] = load_pbppart(fname, parse_Nt, parse_Ns, number_bl);
+	num_data = size(realops, 3);
+	num_blocks = floor(num_data/blocksize);
+	parse_Nt_in = size(realops, 1);
+    num_data_in = size(realops, 3);
+    number_bl_in = size(realops, 2);
+    number_files_in = size(realops, 4);
+	number_src = number_bl;
+	
+	% Rescale the ops so we don't need to multiply D by anything later.
+	realops = realops.*sqrt(fl_flavor);
+	
+	% Build all the non-vev subtracted correlators.
+	% (parse_Nt, number_bl_in, number_bl_in, num_data);
+	disc_corr_output = build_vev_correlator(realops, 1); % fold it.
+	
+	% Recall realops is (parse_Nt, number_bl_in, num_data);
+	
+	% Now bin it!
+	[realops_blocks num_blocks] = block_data(realops, 3, blocksize);
+	[disc_corr_blocks num_blocks] = block_data(disc_corr_output, 4, blocksize);
+	
+	% Okay, now we're ready to get the correlators! Vev subtract!
+	vev_center = mean(mean(realops_blocks, 3), 1);
+	vev_sub = repmat(reshape(parse_Nt.*((vev_center')*vev_center),1,number_src,number_src), [parse_Nt, 1, 1, num_blocks]);
+	
+	disc_corr_output = mean(disc_corr_blocks - vev_sub, 4);
+	for i=1:number_src
+		disc_corr_output(:,i,i) = 0;
+    end
+    
+    disc_sum = zeros(parse_Nt,1);
+  	disc_sum(:) = sum(sum(disc_corr_output, 2),3)/(number_src*(number_src-1));
+	disc_rep = repmat(disc_sum, [1 num_blocks]);
+	
+	clear('disc_corr_output'); % clean up a bit.
+	
+	% Get jackknife blocks of the disconnected correlator
+	% This is a complicated derived quantity, so we don't just use the block function.
+	disc_jack = zeros(parse_Nt, num_blocks);
+	for b=1:num_blocks
+	
+		% Throw out one block.
+		file_conn_copy = realops_blocks;
+		file_conn_copy(:,:,b) = [];
+		
+		file_corr_copy = disc_corr_blocks;
+		file_corr_copy(:,:,:,b) = [];
+	
+		% Okay, now we're ready to get the correlators! Vev subtract!
+		vev_center = mean(mean(file_conn_copy, 3), 1);
+		vev_sub = repmat(reshape(parse_Nt.*((vev_center')*vev_center),1,number_src,number_src), [parse_Nt, 1, 1, num_blocks-1]);
+		
+		disc_corr_output = mean(file_corr_copy - vev_sub, 4);
+		for i=1:number_src
+			disc_corr_output(:,i,i) = 0;
+		end
+		
+		
+		disc_jack(:,b) = sum(sum(disc_corr_output, 2),3)/(number_src*(number_src-1));
+	end
+	
+	% Get a var-covar matrix and some errors.
+	disc_cov_mat = zeros(parse_Nt);
+	disc_err = zeros(parse_Nt, 1);
+	for t1 = 1:parse_Nt
+        for t2 = 1:parse_Nt
+            disc_cov_mat(t1,t2) = sum((disc_rep(t1,:)-disc_jack(t1,:)).*(disc_rep(t2,:)-disc_jack(t2,:)),2).*(num_blocks-1)./num_blocks;
+            if t1 == t2
+                disc_err(t1) = sqrt(disc_cov_mat(t1,t1));
+            end
+        end
+    end
+	
+end

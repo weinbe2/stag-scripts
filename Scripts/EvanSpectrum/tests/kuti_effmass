@@ -1,0 +1,20 @@
+[disc_sum disc_jack disc_cov_mat disc_err] = load_correlator_scalar('../../../Twelve/f12l24t48b40m035', 3, 48, 6, 1);
+disc_twid_sum = disc_sum - disc_sum(25);
+disc_twid_jack = disc_jack - repmat(disc_jack(25,:), [48 1]);
+kuti_meff = zeros(45,1);
+kuti_meff_jack = zeros(45,size(disc_jack,2));
+for i=2:46
+kuti_meff(i-1, 1) = abs(log((disc_twid_sum(i) + 2*disc_twid_sum(i+1) + disc_twid_sum(i+2))/(disc_twid_sum(i-1)+2*disc_twid_sum(i)+disc_twid_sum(i+1))));
+kuti_meff_jack(i-1, :) = abs(log((disc_twid_jack(i,:) + 2*disc_twid_jack(i+1,:) + disc_twid_jack(i+2,:))./(disc_twid_jack(i-1,:)+2*disc_twid_jack(i,:)+disc_twid_jack(i+1,:))));
+end
+kuti_meff_err = sqrt(240/241*sum((kuti_meff_jack - repmat(kuti_meff, [1 241])).^2, 2));
+%hold on; axis([0 24 0 1]); errorbar(1:45, kuti_meff, kuti_meff_err,'.k'); hold off
+
+kmi_meff = zeros(47, 1);
+kmi_meff_jack = zeros(47,size(disc_jack,2));
+for i=1:47
+kmi_meff(i, 1) = abs(log(disc_sum(i)./disc_sum(i+1)));
+kmi_meff_jack(i, :) = abs(log(disc_jack(i,:)./disc_jack(i+1,:)));
+end
+kmi_meff_err = sqrt(240/241*sum((kmi_meff_jack - repmat(kmi_meff, [1 241])).^2, 2));
+%hold on; axis([0 24 0 1]); errorbar(0:46, kmi_meff, kmi_meff_err,'.k'); hold off

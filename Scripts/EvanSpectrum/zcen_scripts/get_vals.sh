@@ -1,0 +1,1 @@
+cat $1 | awk -v lineval=$2 '{ if (NR==lineval) print $6"*cosh("$8"*("$2"-x))+("$10")*cos(3.1415926535*x)*cosh("$12"*("$2"-x))+("$14")"; }' 

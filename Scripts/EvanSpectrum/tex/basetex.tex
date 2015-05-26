@@ -1,0 +1,30 @@
+
+\centerline{\textbf{:STATENAME:}}
+
+:STATEDESC:
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{:STATETABLE:}
+\hline
+ :STATEHEADER: \\
+\hline
+\input{projectnb/qcd/Staggered/:ENSEMBLE:/tex/table_new.:STATECODE:}
+\end{tabular}
+\caption{Fit values for the :STATESHORT:.}
+\end{table}
+
+:BEGINEFFMASS:
+\begin{figure}[H]
+\centering
+\includegraphics[width=3.75in]{/projectnb/qcd/Staggered/:ENSEMBLE:/effmass/plots/effmass-:STATECODE:1.pdf}
+\caption{One-state effective mass plot for the :STATESHORT:.}
+\end{figure}
+:ENDEFFMASS:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=3.75in]{/projectnb/qcd/Staggered/:ENSEMBLE:/sum/plots/sum-:STATECODE:.pdf}
+\caption{Log correlator plot for the :STATESHORT:, overlaid with preferred fit curve.}
+\end{figure}
+

@@ -1,0 +1,27 @@
+cat EvanSpectrum/ensemblelists/tmpfile24_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ps -tmin "$2) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile24_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ps2 -tmin "$3) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile24_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" i5 -tmin "$4) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile24_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" sc -tmin "$5) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile24_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ij -tmin "$6) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile24_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ri5 -tmin "$7) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile24_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" rij -tmin "$8) ; } } '
+./spectrum_connected_multi.pl -do plots -ensembles f4plus8l24t48b40m010m050 f4plus8l24t48b40m015m050 f4plus8l24t48b40m005m060 f4plus8l24t48b40m010m060 f4plus8l24t48b40m015m060 f4plus8l24t48b40m025m060 f4plus8l24t48b40m005m080 f4plus8l24t48b40m010m080 f4plus8l24t48b40m015m080 f4plus8l24t48b40m025m080 f4plus8l24t48b40m005m100 f4plus8l24t48b40m010m100 f4plus8l24t48b40m015m100 f4plus8l24t48b40m025m100 f4plus8l24t48b40m035m060 f4plus8l24t48b40m035m080 f4plus8l24t48b40m035m100 -states ps ps2 i5 ij sc ri5 rij
+
+cat EvanSpectrum/ensemblelists/tmpfile32_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ps -tmin "$2) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile32_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ps2 -tmin "$3) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile32_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" i5 -tmin "$4) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile32_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" sc -tmin "$5) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile32_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ij -tmin "$6) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile32_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" ri5 -tmin "$7) ; } } '
+cat EvanSpectrum/ensemblelists/tmpfile32_wtmin | awk ' { if (NR!=1) { system("./spectrum_fit_interval.pl "$1" rij -tmin "$8) ; } } '
+
+./spectrum_connected_multi.pl -do plots -ensembles f4plus8l32t64b40m005m050 f4plus8l32t64b40m010m050 f4plus8l32t64b40m015m050 f4plus8l32t64b40m005m060 f4plus8l32t64b40m010m060 f4plus8l32t64b40m003m080 f4plus8l32t64b40m005m080 f4plus8l32t64b40m010m080 f4plus8l32t64b40m005m100 f4plus8l32t64b40m010m100 -states ps ps2 i5 ij sc ri5 rij
+
+while read line; do ./spectrum_meas_texcopy.pl $line ps ps2 i5 ij sc sc_stoch ri5 rij; done < EvanSpectrum/ensemblelists/tmpfile24
+
+cat EvanSpectrum/ensemblelists/tmpfile4p8_disc_autocorr | awk ' { system("./spectrum_fit_interval.pl "$1" dc_stoch -blocksize "$2) ;  } '
+cat EvanSpectrum/ensemblelists/tmpfile4p8_disc_autocorr | awk ' { system("./spectrum_fit_interval.pl "$1" dc_stoch_oscil -blocksize "$2) ;  } '
+cat EvanSpectrum/ensemblelists/tmpfile4p8_disc_autocorr | awk ' { system("./spectrum_fit_interval.pl "$1" dc_stoch_ppp -blocksize "$2) ;  } '
+cat EvanSpectrum/ensemblelists/tmpfile4p8_disc_autocorr | awk ' { system("./spectrum_fit_interval.pl "$1" sg_stoch -blocksize "$2) ;  } '
+cat EvanSpectrum/ensemblelists/tmpfile4p8_disc_autocorr | awk ' { system("./spectrum_fit_interval.pl "$1" sg_211 -blocksize "$2) ;  } '
+

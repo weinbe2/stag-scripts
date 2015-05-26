@@ -1,0 +1,77 @@
+cd('../Scripts/EvanSpectrum/matlab'); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m005m050', 6, 5); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m010m050', 6, 3); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m015m050', 6, 3); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m005m060', 6, 5); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m010m060', 6, 4); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m003m080', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m005m080', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l32t64b40m010m080', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m010m050', 6, 5); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m015m050', 6, 3); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m005m060', 6, 4); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m010m060', 6, 3); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m015m060', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m025m060', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m005m080', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m010m080', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m015m080', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m025m080', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m005m100', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m010m100', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m015m100', 6, 2); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m025m100', 6, 1); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m035m060', 6, 1); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m035m080', 6, 1); build_correlator_scalar('../../../FourPlusEight/f4plus8l24t48b40m035m100', 6, 1);MATLAB is selecting SOFTWARE OPENGL rendering.
+[?1h=
+                                               < M A T L A B (R) >
+                                     Copyright 1984-2013 The MathWorks, Inc.
+                                       R2013a (8.1.0.604) 64-bit (glnxa64)
+                                                February 15, 2013
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+0.64694 0.0012191 0.00023933 4.8989 1.6644
+26.7861 0.10095 0.019818 4.8989 1.6644
+1.2137 0.00082988 0.00013609 3.011 0.87048
+94.2774 0.12893 0.021142 3.011 0.87048
+1.7601 0.00070137 0.00011068 2.655 0.74362
+198.2713 0.15802 0.024935 2.655 0.74362
+[Warning: Rank deficient, rank = 1, tol =  2.020651e+03.] 
+[> In effective_mass_utility at 84
+  In build_correlator_scalar at 239] 
+[Warning: Rank deficient, rank = 1, tol =  2.020655e+03.] 
+[> In effective_mass_utility at 84
+  In build_correlator_scalar at 239] 
+0.69393 0.0014295 0.00028917 5.3923 1.8728
+30.8183 0.12697 0.025685 5.3923 1.8728
+1.2754 0.0010664 0.0001995 4.2368 1.3801
+104.1015 0.17409 0.032569 4.2368 1.3801
+0.55874 0.0015452 0.0002886 0.86257 0.28969
+19.98 0.11051 0.02064 0.86257 0.28969
+0.82192 0.00084576 0.00010287 1.3752 0.30229
+43.2349 0.088979 0.010822 1.3752 0.30229
+1.448 0.00088067 0.00012139 1.8443 0.45642
+134.1959 0.16323 0.0225 1.8443 0.45642
+0.90183 0.0013094 0.00025136 4.598 1.5303
+39.0386 0.11336 0.021762 4.598 1.5303
+1.3138 0.00095286 0.00015051 2.747 0.76655
+82.8501 0.12018 0.018983 2.747 0.76655
+0.49948 0.0018987 0.0003343 3.5822 1.1061
+11.975 0.091043 0.01603 3.5822 1.1061
+0.95434 0.00083077 9.6527e-05 2.5986 0.54264
+43.7169 0.076113 0.0088435 2.5986 0.54264
+1.3728 0.00064097 6.5516e-05 1.7971 0.33447
+90.4576 0.084472 0.0086342 1.7971 0.33447
+[Warning: Rank deficient, rank = 1, tol =  8.677598e+00.] 
+[> In effective_mass_utility at 84
+  In build_correlator_scalar at 183] 
+2.1691 0.00058931 5.4142e-05 1.3518 0.22779
+225.8365 0.12271 0.011274 1.3518 0.22779
+0.60765 0.0011117 0.0001243 2.2153 0.44933
+17.7236 0.064853 0.0072507 2.2153 0.44933
+1.0812 0.00093569 9.588e-05 1.9397 0.35893
+56.1123 0.097121 0.0099519 1.9397 0.35893
+1.5259 0.00067657 6.2377e-05 1.3885 0.23419
+111.7632 0.099109 0.0091374 1.3885 0.23419
+2.3606 0.00067 5.7908e-05 1.2537 0.19777
+267.4875 0.15184 0.013123 1.2537 0.19777
+0.76716 0.0012899 0.00014707 1.1527 0.23842
+28.2498 0.094998 0.010831 1.1527 0.23842
+1.2784 0.00096806 8.9251e-05 1.341 0.22692
+78.4475 0.11881 0.010954 1.341 0.22692
+1.7519 0.0013011 0.00015935 1.4352 0.31614
+147.327 0.21883 0.026801 1.4352 0.31614
+2.6472 0.0014754 0.00018069 1.4255 0.31425
+336.3726 0.37494 0.04592 1.4255 0.31425
+2.9246 0.00080979 9.0019e-05 1.2229 0.24497
+410.5515 0.22736 0.025274 1.2229 0.24497
+3.151 0.0008376 8.7849e-05 0.92156 0.17637
+476.5968 0.25338 0.026574 0.92156 0.17637
+3.4902 0.0011538 0.00012101 1.0158 0.19239
+584.7178 0.38659 0.040545 1.0158 0.19239
+[Warning: Rank deficient, rank = 1, tol =  3.214672e+04.] 
+[> In effective_mass_utility at 84
+  In build_correlator_scalar at 239] 
+[Warning: Rank deficient, rank = 1, tol =  3.214679e+04.] 
+[> In effective_mass_utility at 84
+  In build_correlator_scalar at 239] 
+[?1l>
