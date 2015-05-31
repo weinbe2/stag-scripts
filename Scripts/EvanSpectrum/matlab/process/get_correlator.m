@@ -1,4 +1,4 @@
-function [connected_sum, connected_jack, connected_cov_mat, connected_err] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize)
+function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_blocks] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize)
 	% Loads the central value and jackknife blocks in one go, independent of connected or disconnected. 
 	% fname is relative to the current path.
 	% state is 'ps', 'ps2', etc.
