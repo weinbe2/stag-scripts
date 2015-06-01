@@ -142,6 +142,7 @@ function visual_fit(blockval)
 	rescale_yerr = scalar_err;
 	mass_answer = 0; % Effectively rescaling by a zero mass, which gives 1.
 	vev_answer = 0; % subtract off this vev
+	log_answer = 0; % plot on a log scale. 
 	fit_form = 1; % One cosh. (2 = Two cosh, 3 = One cosh, one osc, 4 = Baryon, 5 = Cosh + const, 6 = cosh with zero shift).
 
 	% Options: tmin, tmax
@@ -209,7 +210,7 @@ function visual_fit(blockval)
 		switch option_answer
 			case 1 % Rescale (Purely Visual Effect)
 				
-				new_mass_answer = inputdlg({'Enter a mass to rescale by.','Enter a vev to subtract.'}, 'Input', 1, {num2str(mass_answer),num2str(vev_answer)});
+				new_mass_answer = inputdlg({'Enter a mass to rescale by.','Enter a vev to subtract.', 'Plot on a log (1 = yes, 0 = no)}, 'Input', 1, {num2str(mass_answer),num2str(vev_answer), num2str(log_answer)});
 				
 				if (~(size(new_mass_answer, 1) == 0))
 					tmpmass = str2num(new_mass_answer{1});
@@ -224,6 +225,13 @@ function visual_fit(blockval)
 					if (~(size(tmpvev, 1) == 0))
 						% Rescale!
 						vev_answer = tmpvev;
+						
+					end
+					
+					tmplog = str2num(new_mass_answer{3});
+					if (~(size(tmplog, 1) == 0))
+						% Rescale!
+						log_answer = tmplog;
 						
 					end
 					

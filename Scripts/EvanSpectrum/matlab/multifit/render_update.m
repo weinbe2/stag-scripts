@@ -8,6 +8,19 @@
 	rescale_y = (rescale_sum-vev_answer) ./ rescale_vals; % sub vev here
 	rescale_yerr = rescale_err ./ rescale_vals;
 
+	if (log_answer == 1)
+		rescale_yt = log(rescale_y);
+		rescale_yerrt = rescale_err/rescale_y;
+		
+		imag_flag = (abs(imag(rescale_yt)) > 1e-7);
+		rescale_yt(flag) = -1; % don't try to plot complex things.
+		
+		rescale_y = rescale_yt;
+		rescale_yerr = rescale_yerrt;
+		
+		clear('rescale_yt'); clear('rescale_yerr');
+	end
+	
 	clear('rescale_sum'); clear('rescale_err');
 	
 	% Plot!
