@@ -10,16 +10,16 @@
 
 	if (log_answer == 1)
 		rescale_yt = log(rescale_y);
-		rescale_yerrt = rescale_err/rescale_y;
+		rescale_yerrt = rescale_yerr./rescale_y;
 		
 		imag_flag = (abs(imag(rescale_yt)) > 1e-7);
-		rescale_yt(flag) = -1; % don't try to plot complex things.
+		rescale_yt(imag_flag) = -1e100; % don't try to plot complex things.
 		
 		rescale_y = rescale_yt;
 		rescale_yerr = rescale_yerrt;
 		
-		clear('rescale_yt'); clear('rescale_yerr');
-	end
+		clear('rescale_yt'); clear('rescale_yerrt');
+    end
 	
 	clear('rescale_sum'); clear('rescale_err');
 	
@@ -27,8 +27,27 @@
 	figure(h);
 	errorbar(xrange, rescale_y, rescale_yerr, '.k'); hold on;
 	[funcdata] = get_function(xrange, parse_Nt, fit_form, coefficients);
-	plot(xrange, (funcdata-vev_answer)./rescale_vals); hold off;
-	axis([-1 parse_Nt -max(abs(rescale_y))*1.1 max(abs(rescale_y))*1.1]);
+	
+    if (log_answer == 1)
+        
+        logfuncdata = log((funcdata-vev_answer)./rescale_vals);
+        imag_flag = (abs(imag(logfuncdata)) > 1e-7);
+		logfuncdata(imag_flag) = -1e100; % don't try to plot complex things.
+        
+        plot(xrange, logfuncdata); hold off;
+        
+        
+        tmp_flag = (rescale_y < -1e90);
+        tmp_dat = rescale_y;
+        tmp_dat(tmp_flag) = [];
+		axis([-1 parse_Nt (min(tmp_dat)-log(1.1)) (max(tmp_dat)+log(1.1))]);
+        clear('tmp_flag'); clear('tmp_dat');
+    else
+        
+        plot(xrange, (funcdata-vev_answer)./rescale_vals); hold off;
+        
+		axis([-1 parse_Nt -max(abs(rescale_y))*1.1 max(abs(rescale_y))*1.1]);
+	end
 
 	
 	% And clean up the info window.

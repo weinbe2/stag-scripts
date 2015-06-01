@@ -210,7 +210,7 @@ function visual_fit(blockval)
 		switch option_answer
 			case 1 % Rescale (Purely Visual Effect)
 				
-				new_mass_answer = inputdlg({'Enter a mass to rescale by.','Enter a vev to subtract.', 'Plot on a log (1 = yes, 0 = no)}, 'Input', 1, {num2str(mass_answer),num2str(vev_answer), num2str(log_answer)});
+				new_mass_answer = inputdlg({'Enter a mass to rescale by.','Enter a vev to subtract.', 'Plot on a log (1 = yes, 0 = no).'}, 'Input', 1, {num2str(mass_answer),num2str(vev_answer), num2str(log_answer)});
 				
 				if (~(size(new_mass_answer, 1) == 0))
 					tmpmass = str2num(new_mass_answer{1});
