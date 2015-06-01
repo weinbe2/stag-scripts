@@ -1,14 +1,19 @@
-function visual_fit(blockval)
+function visual_fit(blockval, num_elim)
 	% A windowed-ish fitting program!
 
 	% Load some useful directories!
 	addpath('.\process', '-end');
 	addpath('.\multifit', '-end');
 	
+	% Set num_elim to 1 if it's unset.
+	if (~exist('num_elim', 'var'))
+		num_elim = 1; % single eliminate
+	end
+	
 	% First, we pick a directory.
 
 
-	directory_answer = inputdlg('Enter an input directory.', 'Input', 1, {'Eight\f8l24t48b48m00889'});
+	directory_answer = inputdlg('Enter an input directory.', 'Input', 1, {'FourPlusEight\f4plus8l24t48b40m010m080'});
 	if (size(directory_answer,1) == 0)
 		return;
 	end
@@ -92,7 +97,7 @@ function visual_fit(blockval)
     [scalar_sum, scalar_jack, scalar_cov_mat, ...
 		scalar_err, num_blocks] = ...
 		get_correlator(strcat(['../../../' directory_answer{1}]), ...
-		spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize);
+		spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
 	
 	% Get rolling!
 
@@ -210,7 +215,7 @@ function visual_fit(blockval)
 		switch option_answer
 			case 1 % Rescale (Purely Visual Effect)
 				
-				new_mass_answer = inputdlg({'Enter a mass to rescale by.','Enter a vev to subtract.', 'Plot on a log (1 = yes, 0 = no).'}, 'Input', 1, {num2str(mass_answer),num2str(vev_answer), num2str(log_answer)});
+				new_mass_answer = inputdlg({'Enter a mass to rescale by.','Enter a vev to subtract.', 'Plot on a log (0 no, 1 yes).'}, 'Input', 1, {num2str(mass_answer),num2str(vev_answer), num2str(log_answer)});
 				
 				if (~(size(new_mass_answer, 1) == 0))
 					tmpmass = str2num(new_mass_answer{1});
@@ -261,7 +266,7 @@ function visual_fit(blockval)
 				% Positive Parity Project? y/n
 				% Fit to only even time data? y/n
 				% Full or diagonal correlator matrix? 
-				
+				% Jackknife: number to eliminate on jackknife?
 			
 				new_fit_min = inputdlg({'Minimum Fit t:', 'Maximum Fit t (-1 for symmetric fit):', 'Fit X Precion:', ...
 										'Fold (0 no, 1 yes):', 'Parity Project (0 no, 1 positive, -1 negative):', 'Zero Center (0 no, 1 yes)', ...
@@ -616,13 +621,13 @@ function visual_fit(blockval)
 					
 					% Into the rabbit hole...
 					coefficients_blocks = zeros(num_blocks, 12);
-					flag = 1; is_blocking = 1;
+					jack_flag = 1; is_blocking = 1;
 					for b=1:num_blocks
-                        if (flag == 1)
+                        if (jack_flag == 1)
     						block_fit_output = get_all_nlfit_multi(rescale_jack(:,b), rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
 						
         					if (numel(block_fit_output) == 0)
-            					flag = 0;
+            					jack_flag = 0;
                 				continue;
                             end
 						
@@ -633,7 +638,7 @@ function visual_fit(blockval)
                             end
                         end
 					end
-					if flag == 1 % it worked!
+					if jack_flag == 1 % it worked!
 						coefficients_rep = repmat(coefficients', [num_blocks 1]);
 						errors = sqrt(sum((coefficients_blocks - coefficients_rep).^2,1).*(num_blocks-1)./num_blocks);
 					else % it failed
@@ -764,7 +769,7 @@ function visual_fit(blockval)
 					[scalar_sum, scalar_jack, scalar_cov_mat, ...
 						scalar_err, num_blocks] = ...
 						get_correlator(strcat(['../../../' directory_answer{1}]), ...
-						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize);
+						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
 						
 					
                     run render_update;
@@ -815,7 +820,7 @@ function visual_fit(blockval)
 					[scalar_sum, scalar_jack, scalar_cov_mat, ...
 						scalar_err, num_blocks] = ...
 						get_correlator(strcat(['../../../' directory_answer{1}]), ...
-						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize);
+						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
 		
 					saving = 0;
 					results_save = zeros(1, 40);

@@ -25,7 +25,7 @@ if (fit_ppp == 1) % positive parity project!
     for tmp_i = (parse_Nt):-1:2
         rescale_corr(tmp_i,:) = 0.25*rescale_corr(tmp_i-1,:);
     end
-    rescale_corr(1,:) = 0.0; % we lose the very edge.
+    rescale_corr(1,:) = rescale_corr(2,:); % we lose the very edge.
 elseif (fit_ppp == -1) % negative parity project!
     tmp_meh = rescale_corr(1,:); % last term gets special treatment
     for tmp_i = 0:(parse_Nt-3)
@@ -37,7 +37,7 @@ elseif (fit_ppp == -1) % negative parity project!
     for tmp_i = (parse_Nt):-1:2
         rescale_corr(tmp_i,:) = 0.25*rescale_corr(tmp_i-1,:);
     end
-    rescale_corr(1,:) = 0.0; % we lose the very edge.
+    rescale_corr(1,:) = rescale_corr(2,:); % we lose the very edge.
 end
 
 % Next---check if we zero shift it!

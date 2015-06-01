@@ -1,4 +1,4 @@
-function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_blocks] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize)
+function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_blocks] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize, num_elim)
 	% Loads the central value and jackknife blocks in one go, independent of connected or disconnected. 
 	% fname is relative to the current path.
 	% state is 'ps', 'ps2', etc.
@@ -6,6 +6,12 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 	% parse_Ns is the spatial dimension.
 	% binsize is the size to bin the data before doing
 	%   single elimination jackknife. 
+	% num_elim is optional. If it's not set, it does a single-elimination.
+	%   Otherwise, it does a 'num_elim' elimination.
+	
+	if (~exist('num_elim', 'var'))
+		num_elim = 1; % single eliminate
+	end
 	
 	if (strcmp(state, 'dc_stoch') || strcmp(state, 'sg_stoch'))
         % Get that disconnected state!
@@ -31,9 +37,10 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 		pbp_sum = mean(pbp_blocks, 3);
 		disc_sum = mean(disc_blocks, 4);
 		
-		% Single elim jackknife.
-		pbp_jack = jackknife_bins(pbp_blocks, 3);
-		disc_jack = jackknife_bins(disc_blocks, 4);
+		% Multi- elim jackknife.
+		pbp_jack = jackknife_bins(pbp_blocks, 3, num_elim);
+		disc_jack = jackknife_bins(disc_blocks, 4, num_elim);
+		num_blocks = size(pbp_jack, 3);
 		
 		% Build the disconnected correlators.
 		vev_center = mean(pbp_sum, 1);
@@ -69,7 +76,7 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 			
 			% Sum it, jack it.
 			connected_sum = mean(connected_blocks, 2);
-			connected_jack = jackknife_bins(connected_blocks, 2);
+			connected_jack = jackknife_bins(connected_blocks, 2, num_elim);
 			
 			% And modify disc.
 			disc_sum = disc_sum - connected_sum;
@@ -97,12 +104,13 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 
         % Block it.
         connected_blocks = block_data(connected, 2, binsize);
-        num_blocks = size(connected_blocks, 2);
 
         % Sum, blocks, errors, etc.
         connected_sum = mean(connected_blocks, 2);
-        connected_jack = jackknife_bins(connected_blocks, 2);
+        connected_jack = jackknife_bins(connected_blocks, 2, num_elim);
         %[connected_P_cov_mat, connected_P_err] = errors_jackknife(connected_P_sum, connected_P_jack);
+		
+		num_blocks = size(connected_jack, 2);
     end
 
 	[connected_cov_mat, connected_err] = errors_jackknife(connected_sum, connected_jack);
