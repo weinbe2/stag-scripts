@@ -8,6 +8,7 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 	%   single elimination jackknife. 
 	% num_elim is optional. If it's not set, it does a single-elimination.
 	%   Otherwise, it does a 'num_elim' elimination.
+	% Note: var-covar always comes from single-elimination jack.
 	
 	if (~exist('num_elim', 'var'))
 		num_elim = 1; % single eliminate
@@ -101,6 +102,10 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
             connected = fold_data(connected, is_baryon);
         end
 		%}
+		
+		if (strcmp(state, 'sc_stoch'))
+			connected = -1*connected;
+		end
 
         % Block it.
         connected_blocks = block_data(connected, 2, binsize);
