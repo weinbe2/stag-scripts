@@ -1,3 +1,4 @@
+ - Add 'gap' flag.
  - Fix definition of var-covar to always use single elimination jackknife.
  - Save using zero shift, finite difference into output when saving.
  - Implement finite difference!
