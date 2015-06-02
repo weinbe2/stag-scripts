@@ -93,6 +93,13 @@
 	else
 		diag_string = 'Diagonal Var-Covar';
     end
+	
+	zshift_string = '';
+	if (func_zshift == 0)
+		zshift_string = 'Normal';
+	else
+		zshift_string = 'Zero Shifted';
+	end
     
     saving_string = '';
     if (saving == 0)
@@ -148,6 +155,7 @@
 						strcat(['Zero Center: ' zero_string]), ...
 						strcat(['Fit Points: ' even_string]), ...
 						strcat(['Variance-Covariance: ' diag_string]), ...
+						strcat(['Cosh Type: ' zshift_string]), ...
 						'', ...
 						strcat(['Eliminate on Jackknife: ' num2str(num_elim)]), ...
                         strcat(['Saving: ' saving_string]), ...
@@ -170,4 +178,4 @@
 						strcat(['P-value: ' num2str(p_val)]), ...
 						strcat(['Condition Num: ' num2str(cond_num)])});
 
-	clear('fold_string'); clear('ppp_string'); clear('zero_string'); clear('even_string'); clear('diag_string'); clear('vstr'); clear('saving_string'); clear('blocking_string');
+	clear('fold_string'); clear('ppp_string'); clear('zero_string'); clear('even_string'); clear('diag_string'); clear('vstr'); clear('saving_string'); clear('blocking_string'); clear('zshift_string');

@@ -164,6 +164,9 @@ function visual_fit(blockval, num_elim)
 	fit_even = 0; % fit all
 	fit_diag = 0; % fit full correlation matrix instead of diagonal.
 	fit_x_prec = 1e-10; % set the x precision of the fit.
+	
+	% Modify fit function: 
+	func_zshift = 0; % don't use zero-shifted cosh.
 
 	h = figure();
 	movegui(h, 'northwest');
@@ -173,7 +176,7 @@ function visual_fit(blockval, num_elim)
 	plot(xrange, funcdata); hold off;
 	axis([-1 parse_Nt -max(abs(scalar_sum))*1.1 max(abs(scalar_sum))*1.1]);
 
-	h2 = figure('menu', 'none', 'toolbar', 'none', 'units', 'normalized', 'position', [0 0 .3 .8]);
+	h2 = figure('menu', 'none', 'toolbar', 'none', 'units', 'normalized', 'position', [0 0 .3 .9]);
 	movegui(h2, 'northeast');
 	set (h2, 'Name', 'Info');
 	ph = uipanel(h2, 'Units', 'normalized', 'position', [0.05 0.05 0.9 0.9], 'title', 'Display Window');
@@ -272,8 +275,8 @@ function visual_fit(blockval, num_elim)
 			
 				new_fit_min = inputdlg({'Minimum Fit t:', 'Maximum Fit t (-1 for symmetric fit):', 'Fit X Precion:', ...
 										'Fold (0 no, 1 yes):', 'Parity Project (0 no, 1 positive, -1 negative):', 'Zero Center (0 no, 1 yes)', ...
-										'Fit Every Other (0 no, 1 yes)', 'Diagonal Correlator (0 no, 1 yes)'}, ...
-										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec), num2str(fit_fold), num2str(fit_ppp), num2str(fit_zero), num2str(fit_even), num2str(fit_diag)});
+										'Fit Every Other (0 no, 1 yes)', 'Diagonal Correlator (0 no, 1 yes)', 'Zeroed Cosh (0 no, 1 yes)'}, ...
+										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec), num2str(fit_fold), num2str(fit_ppp), num2str(fit_zero), num2str(fit_even), num2str(fit_diag), num2str(func_zshift)});
 				
 				%fit_minimum = 5;
 				%fit_maximum = parse_Nt-fit_minimum;
@@ -344,6 +347,12 @@ function visual_fit(blockval, num_elim)
 						end
 					end
 					
+					tmpfunczshift = str2num(new_fit_min{9});
+					if (~(size(tmpfunczshift, 1) == 0))
+						if (tmpfunczshift == 0 || tmpfunczshift == 1)
+							func_zshift = tmpfunczshift;
+						end
+					end
 					
 				end
 				
@@ -355,6 +364,7 @@ function visual_fit(blockval, num_elim)
 				clear('tmpfiteven');
 				clear('tmpfitdiag');
 				clear('tmpxprec');
+				clear('tmpfunczshift');
 				
 				% Fix the cosh.
 				run get_cosh;

@@ -6,7 +6,12 @@
 global dircosh;
 global modcosh;
 
-% For now, we just support the default functions.
-dircosh = @(m,t,nt)(cosh(m*(nt/2-t)));
-
-modcosh = @(m,t,nt)((1-2*mod(t,2)).*cosh(m*(nt/2-t)));
+% Is it a zeroed cosh?
+if (func_zshift == 1)
+	dircosh = @(m,t,nt)(cosh(m*(nt/2-t))-1);
+	modcosh = @(m,t,nt)((1-2*mod(t,2)).*(cosh(m*(nt/2-t))-1));
+else
+	% Regular fit functions.
+	dircosh = @(m,t,nt)(cosh(m*(nt/2-t)));
+	modcosh = @(m,t,nt)((1-2*mod(t,2)).*cosh(m*(nt/2-t)));
+end
