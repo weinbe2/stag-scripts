@@ -179,7 +179,9 @@ function visual_fit(blockval, num_elim)
 	ph = uipanel(h2, 'Units', 'normalized', 'position', [0.05 0.05 0.9 0.9], 'title', 'Display Window');
 	th = uicontrol(ph, 'style','text','Units','normalized','position',[0 0 1 1],'FontSize', 9, 'string', {'Rescale mass: 0.0', 'Fit Form: One cosh', 'Amplitude 1: 0.0', 'Mass 1: 0.0', 'Amplitude 2: 0.0', 'Mass 2: 0.0', 'Chisq per DoF: 0.0'}, 'horizontalalignment', 'left', 'FontName', 'FixedWidth');
 
-
+	% Get the correct cosh functions in place.
+	run get_cosh; 
+	
 	run render_update;
 
 	figure(h);
@@ -353,6 +355,9 @@ function visual_fit(blockval, num_elim)
 				clear('tmpfiteven');
 				clear('tmpfitdiag');
 				clear('tmpxprec');
+				
+				% Fix the cosh.
+				run get_cosh;
 				
 				run render_update;
 				

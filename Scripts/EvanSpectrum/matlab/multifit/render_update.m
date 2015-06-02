@@ -1,4 +1,8 @@
 
+	% Get the global dircosh, modcosh functions.
+	global dircosh;
+	global modcosh;
+
 	% First just load up prepare_data. This does all the projecting, etc.
 	% This guarantees rescale_* are all set.
 	run prepare_data; 
