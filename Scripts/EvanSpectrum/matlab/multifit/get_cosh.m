@@ -6,8 +6,10 @@
 global dircosh;
 global modcosh;
 
-% Is it a zeroed cosh?
-if (func_zshift == 1)
+if (func_diff == 1) % Is it a finite diff?
+	dircosh = @(m,t,nt)(cosh(m*(nt/2-t))-cosh(m*(nt/2-(t+1))));
+	modcosh = @(m,t,nt)((1-2*mod(t,2)).*(cosh(m*(nt/2-t)))-(1-2*mod(t+1,2)).*(cosh(m*(nt/2-(t+1)))));
+elseif (func_zshift == 1) % Is it a zeroed cosh?
 	dircosh = @(m,t,nt)(cosh(m*(nt/2-t))-1);
 	modcosh = @(m,t,nt)((1-2*mod(t,2)).*(cosh(m*(nt/2-t))-1));
 else

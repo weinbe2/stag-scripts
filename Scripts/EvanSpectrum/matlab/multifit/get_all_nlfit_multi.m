@@ -1,4 +1,4 @@
-function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, fiteven, fitcosh, fitoscil, fitdiag, fit_xprec, coeff, constraints)
+function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, fiteven, funcdiff, fitcosh, fitoscil, fitdiag, fit_xprec, coeff, constraints)
 
 	% Get the global dircosh, modcosh functions.
 	global dircosh;
@@ -15,17 +15,33 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
 	t2 = tmax;
 	
 	if (fiteven == 0) % fit to all
-		xval = t1:t2;
-		yval = corr_fcn((t1+1):(t2+1))';
-		ycorr = corr_mat((t1+1):(t2+1),(t1+1):(t2+1));
-	else % only fit to even...
-		if (mod(t1,2)==0)
-			xval = t1:2:t2;
-		else
-			xval = (t1+1):2:t2;
+		if (funcdiff == 0) % still all
+			xval = t1:t2;
+			yval = corr_fcn((t1+1):(t2+1))';
+			ycorr = corr_mat((t1+1):(t2+1),(t1+1):(t2+1));
+		else % finite diff! one less data.
+			xval = t1:(t2-1);
+			yval = corr_fcn((t1+1):t2)';
+			ycorr = corr_mat((t1+1):t2,(t1+1):t2);
 		end
-		yval = corr_fcn((xval+1))';
-		ycorr = corr_mat((xval+1),(xval+1));
+	else % only fit to even...
+		if (funcdiff == 0) % no finite diff.
+			if (mod(t1,2)==0)
+				xval = t1:2:t2;
+			else
+				xval = (t1+1):2:t2;
+			end
+			yval = corr_fcn((xval+1))';
+			ycorr = corr_mat((xval+1),(xval+1));
+		else % finite diff! careful about end.
+			if (mod(t1,2)==0)
+				xval = t1:2:(t2-1);
+			else
+				xval = (t1+1):2:(t2-1);
+			end
+			yval = corr_fcn((xval+1))';
+			ycorr = corr_mat((xval+1),(xval+1));
+		end
 	end
 	
 	
@@ -223,10 +239,10 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
 			end
 			
 			if (numel(guess) > 1)
-				[temp_guess, fit_output(count,15), succ_code] = fminsearch(chisqfunc_constr, guess, optimset('TolX', 1e-10,'TolFun', 1e-7,'MaxFunEvals',1000000,'MaxIter',1000000));
+				[temp_guess, fit_output(count,15), succ_code] = fminsearch(chisqfunc_constr, guess, optimset('TolX', fit_xprec,'TolFun', 1e-7,'MaxFunEvals',100000,'MaxIter',100000));
 			else
 				bound = max([abs(max(corr_fcn)) abs(min(corr_fcn))]);
-				[temp_guess, fit_output(count,15)] = fminbnd(chisqfunc_constr, -bound, bound, optimset('TolX', 1e-12,'MaxFunEvals',1000000,'MaxIter',1000000));
+				[temp_guess, fit_output(count,15)] = fminbnd(chisqfunc_constr, -bound, bound, optimset('TolX', fit_xprec,'MaxFunEvals',100000,'MaxIter',100000));
 			end			
 			
 		end

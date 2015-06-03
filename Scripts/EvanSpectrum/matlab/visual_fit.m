@@ -163,10 +163,12 @@ function visual_fit(blockval, num_elim)
 	fit_zero = 0; % don't normalize center to zero or "gap" it.
 	fit_even = 0; % fit all
 	fit_diag = 0; % fit full correlation matrix instead of diagonal.
+	fit_diff = 0; % fit original data, not finite diffs. 
 	fit_x_prec = 1e-10; % set the x precision of the fit.
 	
 	% Modify fit function: 
 	func_zshift = 0; % don't use zero-shifted cosh.
+	func_diff = 0; % don't use finite difference cosh.
 
 	% Get correct cosh functions in place.
 	run get_cosh; 
@@ -278,8 +280,8 @@ function visual_fit(blockval, num_elim)
 			
 				new_fit_min = inputdlg({'Minimum Fit t:', 'Maximum Fit t (-1 for symmetric fit):', 'Fit X Precion:', ...
 										'Fold (0 no, 1 yes):', 'Parity Project (0 no, 1 positive, -1 negative):', 'Zero Center (0 no, 1 yes, -1 gap)', ...
-										'Fit Every Other (0 no, 1 yes)', 'Diagonal Correlator (0 no, 1 yes)', 'Zeroed Cosh (0 no, 1 yes)'}, ...
-										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec), num2str(fit_fold), num2str(fit_ppp), num2str(fit_zero), num2str(fit_even), num2str(fit_diag), num2str(func_zshift)});
+										'Fit Every Other (0 no, 1 yes)', 'Diagonal Correlator (0 no, 1 yes)', 'Zeroed Cosh (0 no, 1 yes)', 'Finite Difference Data (0 no, 1 yes)', 'Finite Difference Cosh (0 no, 1 yes)'}, ...
+										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec), num2str(fit_fold), num2str(fit_ppp), num2str(fit_zero), num2str(fit_even), num2str(fit_diag), num2str(func_zshift), num2str(fit_diff), num2str(func_diff)});
 				
 				%fit_minimum = 5;
 				%fit_maximum = parse_Nt-fit_minimum;
@@ -357,6 +359,19 @@ function visual_fit(blockval, num_elim)
 						end
 					end
 					
+					tmpfitdiff = str2num(new_fit_min{10});
+					if (~(size(tmpfitdiff, 1) == 0))
+						if (tmpfitdiff == 0 || tmpfitdiff == 1)
+							fit_diff = tmpfitdiff;
+						end
+					end
+					
+					tmpfuncdiff = str2num(new_fit_min{11});
+					if (~(size(tmpfuncdiff, 1) == 0))
+						if (tmpfuncdiff == 0 || tmpfuncdiff == 1)
+							func_diff = tmpfuncdiff;
+						end
+					end
 				end
 				
 				clear('tmpfitmin');
@@ -368,6 +383,8 @@ function visual_fit(blockval, num_elim)
 				clear('tmpfitdiag');
 				clear('tmpxprec');
 				clear('tmpfunczshift');
+				clear('tmpfitdiff');
+				clear('tmpfuncdiff');
 				
 				% Fix the cosh.
 				run get_cosh;
@@ -383,6 +400,11 @@ function visual_fit(blockval, num_elim)
 				fit_zero = 0; % don't zero the center of the correlator.
 				fit_even = 0; % fit all
 				fit_diag = 0; % fit full correlation matrix instead of diagonal.
+				fit_diff = 0; % fit original data, not finite diffs. 
+	
+				% Modify fit function: 
+				func_zshift = 0; % don't use zero-shifted cosh.
+				func_diff = 0; % don't use finite difference cosh.
 
 				run render_update;
 				
@@ -579,7 +601,7 @@ function visual_fit(blockval, num_elim)
 				run prepare_data;
 			
 				% Whelp, here we go!
-				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
 				
 				clear('rescale_sum'); clear('rescale_err'); clear('rescale_cov_mat');
 				
@@ -626,7 +648,7 @@ function visual_fit(blockval, num_elim)
 				run prepare_data;
 			
 				% Whelp, here we go!
-				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
 				
 				
 				if (~(size(the_fit_output, 1) == 0))
@@ -642,7 +664,7 @@ function visual_fit(blockval, num_elim)
 					jack_flag = 1; is_blocking = 1;
 					for b=1:num_blocks
                         if (jack_flag == 1)
-    						block_fit_output = get_all_nlfit_multi(rescale_jack(:,b), rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+    						block_fit_output = get_all_nlfit_multi(rescale_jack(:,b), rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
 						
         					if (numel(block_fit_output) == 0)
             					jack_flag = 0;

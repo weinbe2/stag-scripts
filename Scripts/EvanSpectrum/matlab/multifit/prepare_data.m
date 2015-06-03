@@ -15,6 +15,8 @@ end
 
 % Next---check if we positive parity project it!
 if (fit_ppp == 1) % positive parity project!
+	% Take care of first data.
+	tmp_first = 0.25*(rescale_corr(parse_Nt,:)+2*rescale_corr(1,:)+rescale_corr(2,:));
     tmp_meh = rescale_corr(1,:); % last term gets special treatment
     for tmp_i = 0:(parse_Nt-3)
         rescale_corr(tmp_i+1,:) = rescale_corr(tmp_i+1,:)+2*rescale_corr(tmp_i+2,:)+rescale_corr(tmp_i+3,:);
@@ -25,8 +27,10 @@ if (fit_ppp == 1) % positive parity project!
     for tmp_i = (parse_Nt):-1:2
         rescale_corr(tmp_i,:) = 0.25*rescale_corr(tmp_i-1,:);
     end
-    rescale_corr(1,:) = rescale_corr(2,:); % we lose the very edge.
+    rescale_corr(1,:) = tmp_first; % we lose the very edge.
 elseif (fit_ppp == -1) % negative parity project!
+	% Take care of first data. Minus is to be consistent.
+	tmp_first = -0.25*(-rescale_corr(parse_Nt,:)+2*rescale_corr(1,:)-rescale_corr(2,:));
     tmp_meh = rescale_corr(1,:); % last term gets special treatment
     for tmp_i = 0:(parse_Nt-3)
         rescale_corr(tmp_i+1,:) = (1-2*mod(tmp_i,2))*(-rescale_corr(tmp_i+1,:)+2*rescale_corr(tmp_i+2,:)-rescale_corr(tmp_i+3,:));
@@ -37,7 +41,7 @@ elseif (fit_ppp == -1) % negative parity project!
     for tmp_i = (parse_Nt):-1:2
         rescale_corr(tmp_i,:) = 0.25*rescale_corr(tmp_i-1,:);
     end
-    rescale_corr(1,:) = rescale_corr(2,:); % we lose the very edge.
+    rescale_corr(1,:) = tmp_first; % restore end.
 end
 
 % Next---check if we zero shift it!
@@ -63,6 +67,16 @@ elseif (fit_zero == -1) % 'gap' it.
     rep_shift_middle = repmat(shift_middle, [parse_Nt size(rescale_corr, 2)]);
     rescale_corr = rescale_corr - rep_shift_middle;
     clear('shift_middle'); clear('rep_shift_middle');
+end
+
+% Finite difference the data!
+if (fit_diff == 1) % finite differences!
+	% First, compute finite difference of last data.
+	tmp_last = rescale_corr(parse_Nt,:)-rescale_corr(1,:);
+	for tmp_i=1:parse_Nt-1
+		rescale_corr(tmp_i,:) = rescale_corr(tmp_i,:)-rescale_corr(tmp_i+1,:);
+	end
+	rescale_corr(parse_Nt,:) = tmp_last;
 end
 
 % Once all these things are done, get the error.

@@ -96,11 +96,20 @@
 		diag_string = 'Diagonal Var-Covar';
     end
 	
-	zshift_string = '';
-	if (func_zshift == 0)
-		zshift_string = 'Normal';
+	cosh_string = '';
+	if (func_zshift == 0 && func_diff == 0)
+		cosh_string = 'Normal';
+	elseif (func_diff == 1) % zero shift doesn't matter.
+		cosh_string = 'Finite Difference';
+	else % must be zero shifted.
+		cosh_string = 'Zero Shifted';
+	end
+	
+	diff_string = '';
+	if (fit_diff == 0)
+		diff_string = 'No';
 	else
-		zshift_string = 'Zero Shifted';
+		diff_string = 'By One';
 	end
     
     saving_string = '';
@@ -155,9 +164,10 @@
 						strcat(['Fold: ' fold_string]), ...
 						strcat(['Parity Project: ' ppp_string]), ...
 						strcat(['Zero Center: ' zero_string]), ...
+						strcat(['Finite Differences: ' diff_string]), ...
 						strcat(['Fit Points: ' even_string]), ...
 						strcat(['Variance-Covariance: ' diag_string]), ...
-						strcat(['Cosh Type: ' zshift_string]), ...
+						strcat(['Cosh Type: ' cosh_string]), ...
 						'', ...
 						strcat(['Eliminate on Jackknife: ' num2str(num_elim)]), ...
                         strcat(['Saving: ' saving_string]), ...
@@ -180,4 +190,4 @@
 						strcat(['P-value: ' num2str(p_val)]), ...
 						strcat(['Condition Num: ' num2str(cond_num)])});
 
-	clear('fold_string'); clear('ppp_string'); clear('zero_string'); clear('even_string'); clear('diag_string'); clear('vstr'); clear('saving_string'); clear('blocking_string'); clear('zshift_string');
+	clear('fold_string'); clear('ppp_string'); clear('zero_string'); clear('even_string'); clear('diag_string'); clear('vstr'); clear('saving_string'); clear('blocking_string'); clear('cosh_string');
