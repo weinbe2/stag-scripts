@@ -80,7 +80,7 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 			% Single elim
 			pbp_jack_sing = jackknife_bins(pbp_blocks, 3, 1);
 			disc_jack_sing = jackknife_bins(disc_blocks, 4, 1);
-			num_blocks_sing = size(pbp_jack, 3);
+			num_blocks_sing = size(pbp_jack_sing, 3);
 			
 			% Next on the jackknife!
 			vev_center = mean(pbp_jack_sing, 1);
