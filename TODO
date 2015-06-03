@@ -2,3 +2,4 @@
  - Reorganize 'Fit options' to distinguish how the data is manipulated
      versus how the fit functions are manipulated.
  - Add classical errors.
+ - Add baryon fits properly.
