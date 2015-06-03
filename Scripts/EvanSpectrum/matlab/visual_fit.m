@@ -160,7 +160,7 @@ function visual_fit(blockval, num_elim)
 	fit_maximum = parse_Nt-fit_minimum;
 	fit_fold = 0; % don't fold
 	fit_ppp = 0; % don't positive parity project
-	fit_zero = 0; % don't normalize center to zero.
+	fit_zero = 0; % don't normalize center to zero or "gap" it.
 	fit_even = 0; % fit all
 	fit_diag = 0; % fit full correlation matrix instead of diagonal.
 	fit_x_prec = 1e-10; % set the x precision of the fit.
@@ -168,6 +168,9 @@ function visual_fit(blockval, num_elim)
 	% Modify fit function: 
 	func_zshift = 0; % don't use zero-shifted cosh.
 
+	% Get correct cosh functions in place.
+	run get_cosh; 
+	
 	h = figure();
 	movegui(h, 'northwest');
 	set(h, 'Name', 'Correlator');
@@ -274,7 +277,7 @@ function visual_fit(blockval, num_elim)
 				% Jackknife: number to eliminate on jackknife?
 			
 				new_fit_min = inputdlg({'Minimum Fit t:', 'Maximum Fit t (-1 for symmetric fit):', 'Fit X Precion:', ...
-										'Fold (0 no, 1 yes):', 'Parity Project (0 no, 1 positive, -1 negative):', 'Zero Center (0 no, 1 yes)', ...
+										'Fold (0 no, 1 yes):', 'Parity Project (0 no, 1 positive, -1 negative):', 'Zero Center (0 no, 1 yes, -1 gap)', ...
 										'Fit Every Other (0 no, 1 yes)', 'Diagonal Correlator (0 no, 1 yes)', 'Zeroed Cosh (0 no, 1 yes)'}, ...
 										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec), num2str(fit_fold), num2str(fit_ppp), num2str(fit_zero), num2str(fit_even), num2str(fit_diag), num2str(func_zshift)});
 				
@@ -328,7 +331,7 @@ function visual_fit(blockval, num_elim)
 					
 					tmpfitzero = str2num(new_fit_min{6});
 					if (~(size(tmpfitzero, 1) == 0))
-						if (tmpfitzero == 0 || tmpfitzero == 1)
+						if (tmpfitzero == 0 || tmpfitzero == 1 || tmpfitzero == -1)
 							fit_zero = tmpfitzero;
 						end
 					end

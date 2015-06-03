@@ -42,11 +42,24 @@ end
 
 % Next---check if we zero shift it!
 % Zero shifting just subtracts the value at the
-% center of the central value, so there's still
-% errors on the center!
+% center of the correlator from the mean and
+% from the jackknife blocks, so the value and error
+% at the center is exactly zero.
+
+% Gap: subtract the value at the center of the mean
+% from the mean and all jackknife blocks, so there's
+% still errors on the center (errors are, in fact,
+% unchanged. If there's a constant in
+% the fit, it'll exactly absorb that.
 if (fit_zero == 1) % shift to zero
-	% ,1 because just central val.
-    shift_middle = rescale_corr((parse_Nt/2+1),1); 
+	shift_middle = rescale_corr((parse_Nt/2+1),:); 
+    rep_shift_middle = repmat(shift_middle, [parse_Nt 1]);
+    %shift_middle = rescale_corr((parse_Nt/2+1),1); 
+    %rep_shift_middle = repmat(shift_middle, [parse_Nt size(rescale_corr, 2)]);
+    rescale_corr = rescale_corr - rep_shift_middle;
+    clear('shift_middle'); clear('rep_shift_middle');
+elseif (fit_zero == -1) % 'gap' it.
+	shift_middle = rescale_corr((parse_Nt/2+1),1); 
     rep_shift_middle = repmat(shift_middle, [parse_Nt size(rescale_corr, 2)]);
     rescale_corr = rescale_corr - rep_shift_middle;
     clear('shift_middle'); clear('rep_shift_middle');
