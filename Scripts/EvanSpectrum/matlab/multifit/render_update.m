@@ -74,8 +74,10 @@
 	zero_string = '';
 	if (fit_zero == 0)
 		zero_string = 'No';
-	else
+	elseif (fit_zero == 1)
 		zero_string = 'Yes';
+	elseif (fit_zero == -1)
+		zero_string = 'Gap';
 	end
 	
 	
