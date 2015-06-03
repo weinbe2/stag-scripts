@@ -135,9 +135,18 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
                 wut = 'wut'
         end
 	
+		% Get #dof. This is size(yval,2)-numel(guess)+ number of
+		% things with a constraint ~1e-20.
+		dof = size(yval,2)-numel(guess);
+		if (exist('constraints','var'))
+			% = 1 if an exact constraint, = 0 otherwise. 
+			constr_flags = floor(((constraints < 1e-18) + (constraints > 1e-22))/1.5);
+			dof = dof+sum(constr_flags);
+		end
+	
 		% Build the chisq function! This can be modified if we're doing
 		% finite difference fits, for example.
-		chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-fitparamfunc(x,xval(:)))'*(ycorr\(yval(:)-fitparamfunc(x,xval(:)))));
+		chisqfunc = @(x)(1.0/(dof)*(yval(:)-fitparamfunc(x,xval(:)))'*(ycorr\(yval(:)-fitparamfunc(x,xval(:)))));
 		
 		% check if we care about constraints.
 		if (~exist('constraints', 'var'))
@@ -246,6 +255,7 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
 			end			
 			
 		end
+		
 
         if (fit_output(count, 15) > 1e-20 && succ_code == 1)
 
@@ -275,7 +285,7 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
             end
             
             
-            fit_output(count,16) = 1.0-chi2cdf(fit_output(count,15)*(size(yval,2)-numel(temp_guess)), size(yval,2)-numel(temp_guess));
+            fit_output(count,16) = 1.0-chi2cdf(fit_output(count,15)*dof, dof);
 
             fit_output = fit_output(1,:);
         else

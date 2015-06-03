@@ -496,6 +496,11 @@ function visual_fit(blockval, num_elim)
 				clear('new_guess_answers'); 
 			
 			case 5 % Set Constraints
+			
+				% Note! If the constraint is >1e-22, <1e-18,
+				% it is set as an exact equality (basically...) 
+				% and doesn't get counted in the dof!
+			
 				new_guess_answers = inputdlg({'Cosh: Amplitude 1 constraint:', 'Cosh: Mass 1 constraint:', 'Cosh: Amplitude 2 constraint:', 'Cosh: Mass 2 constraint:', 'Cosh: Amplitude 3 constraint:', 'Cosh: Mass 3 constraint:',...
                     'Osc: Amplitude 4 constraint:', 'Osc: Mass 4 constraint:', 'Osc: Amplitude 5 constraint:', 'Osc: Mass 5 constraint:', 'Osc: Amplitude 6 constraint:', 'Osc: Mass 6 constraint:'}, ...
                     'Input', 1, {num2str(constraints(1)), num2str(constraints(2)), num2str(constraints(3)), num2str(constraints(4)), ...
