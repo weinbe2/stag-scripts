@@ -1,4 +1,4 @@
-function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_blocks] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize, num_elim)
+function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_blocks, connected_jack_single] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize, num_elim)
 	% Loads the central value and jackknife blocks in one go, independent of connected or disconnected. 
 	% fname is relative to the current path.
 	% state is 'ps', 'ps2', etc.
@@ -10,9 +10,19 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 	%   Otherwise, it does a 'num_elim' elimination.
 	% Note: var-covar always comes from single-elimination jack.
 	
+	% The output 'connected_jack_single' is optional.
+	% It'll give the jackknife blocks from a single elimination
+	% if so desired. 
+	
 	if (~exist('num_elim', 'var'))
 		num_elim = 1; % single eliminate
 	end
+	
+	want_single = 0;
+	if (nargout == 6) % want single elim!
+		want_single = 1;
+	end
+	
 	
 	if (strcmp(state, 'dc_stoch') || strcmp(state, 'sg_stoch'))
         % Get that disconnected state!
@@ -65,6 +75,27 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 		disc_jack = zeros(parse_Nt, num_blocks);
 		disc_jack(:,:) = disc_jack2(:,1,1,:);
 		
+		% Grab the single elim if wanted.
+		if (want_single == 1)
+			% Single elim
+			pbp_jack_sing = jackknife_bins(pbp_blocks, 3, 1);
+			disc_jack_sing = jackknife_bins(disc_blocks, 4, 1);
+			num_blocks_sing = size(pbp_jack, 3);
+			
+			% Next on the jackknife!
+			vev_center = mean(pbp_jack_sing, 1);
+			vev_1 = repmat(reshape(vev_center,1, number_bl, 1, num_blocks_sing), [parse_Nt, 1, number_bl, 1]);
+			vev_2 = repmat(reshape(vev_center,1, 1, number_bl, num_blocks_sing), [parse_Nt, number_bl, 1, 1]);
+			disc_jack_sing = disc_jack_sing - vev_1.*vev_2.*parse_Nt;
+			for i=1:number_bl
+				disc_jack_sing(:,i,i,:) = 0;
+			end
+			disc_jack2 = sum(sum(disc_jack_sing,2),3)/(number_bl*(number_bl-1));
+			
+			disc_jack_sing = zeros(parse_Nt, num_blocks_sing);
+			disc_jack_sing(:,:) = disc_jack2(:,1,1,:);
+		end
+		
 		% Grab the connected piece if we need to!
 		if (strcmp(state, 'sg_stoch'))
 			
@@ -79,15 +110,27 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 			connected_sum = mean(connected_blocks, 2);
 			connected_jack = jackknife_bins(connected_blocks, 2, num_elim);
 			
+			% Grab the single elim if wanted.
+			if (want_single == 1)
+				connected_jack_single = jackknife_bins(connected_blocks, 2, 1);
+			end
+			
 			% And modify disc.
 			disc_sum = disc_sum - connected_sum;
 			disc_jack = disc_jack - connected_jack;
 			
+			if (want_single == 1)
+				disc_jack_sing = disc_jack_sing - connected_jack_single;
+			end
 		end
 		
 		% Rename!
 		connected_sum = disc_sum;
 		connected_jack = disc_jack; 
+		
+		if (want_single == 1)
+			connected_jack_single = disc_jack_sing;
+		end
 		
     else
 
@@ -116,6 +159,11 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
         %[connected_P_cov_mat, connected_P_err] = errors_jackknife(connected_P_sum, connected_P_jack);
 		
 		num_blocks = size(connected_jack, 2);
+		
+		% Single elim.
+		if (want_single == 1)
+			connected_jack_single = jackknife_bins(connected_blocks, 2, 1);
+		end
     end
 
 	[connected_cov_mat, connected_err] = errors_jackknife(connected_sum, connected_jack);
