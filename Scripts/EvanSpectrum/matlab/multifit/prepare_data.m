@@ -1,7 +1,11 @@
 % Prepare data for a fit depending on flags.
 
-% Throw the central value and the jackknife blocks together.
-rescale_corr = cat(2, scalar_sum, scalar_jack);
+% Throw the central value, jackknife blocks, and single
+% elim jackknife blocks together.
+rescale_corr = cat(2, scalar_sum, scalar_jack, scalar_jack_single);
+
+% Recall the single elim jackknife blocks are used to define the
+% var-covar matrix. 
 
 % First---check if we fold!
 if (fit_fold == 1) % fold!
@@ -82,12 +86,11 @@ end
 % Once all these things are done, get the error.
 
 rescale_sum = rescale_corr(:,1);
-rescale_jack = rescale_corr(:,2:end);
+rescale_jack = rescale_corr(:,2:(size(scalar_jack,2)+1));
+rescale_jack_single = rescale_corr(:,(size(scalar_jack,2)+2):end);
 [rescale_cov_mat, rescale_err] = ...
-	errors_jackknife(rescale_sum, rescale_jack);
+	errors_jackknife(rescale_sum, rescale_jack_single);
 
-
-
-
+clear('rescale_jack_single');
 
 
