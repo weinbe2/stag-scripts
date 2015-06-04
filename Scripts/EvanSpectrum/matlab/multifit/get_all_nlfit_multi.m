@@ -69,67 +69,85 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
 	coeff(8) = -log(coeff(8));
 	
 	if (strcmp(choice, 'Yes'))
-	
+		% We get two things here: fitparamfunc, which has the log
+		% ordering map for the masses, and fitmassfunc, which doesn't
+		% have the log map. The former is used for fits, latter for
+		% estimating classical errors. 
         switch fitfunc
          case 1 % cosh 1 oscil 0
             guess = [coeff(1) coeff(2) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))))));
          case 2 % cosh 2 oscil 0
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))))));
          case 3 % cosh 3 oscil 0
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) coeff(5) coeff(6) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*dircosh(+exp(-x(2))+exp(-x(4))+exp(-x(6)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt)+x(5)*dircosh(x(6),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))))));
          case 4 % cosh 0 oscil 1
             guess = [coeff(7) coeff(8) ];
 			fitparamfunc = @(x,xv)(+x(1)*modcosh(+exp(-x(2)), xv, nt));
+			fitmassfunc = @(x,xv)(+x(1)*modcosh(x(2), xv, nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2)))*(nt/2-xval(:)))))));
          case 5 % cosh 1 oscil 1
             guess = [coeff(1) coeff(2) coeff(7) coeff(8) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*modcosh(+exp(-x(4)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*modcosh(x(4),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4)))*(nt/2-xval(:)))))));
          case 6 % cosh 2 oscil 1
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) coeff(7) coeff(8) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*modcosh(+exp(-x(6)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt)+x(5)*modcosh(x(6),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6)))*(nt/2-xval(:)))))));
          case 7 % cosh 3 oscil 1
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) coeff(5) coeff(6) coeff(7) coeff(8) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*dircosh(+exp(-x(2))+exp(-x(4))+exp(-x(6)),xv,nt)+x(7)*modcosh(+exp(-x(8)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt)+x(5)*dircosh(x(6),xv,nt)+x(7)*modcosh(x(8),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8)))*(nt/2-xval(:)))))));
          case 8 % cosh 0 oscil 2
             guess = [coeff(7) coeff(8) coeff(9) coeff(10) ];
 			fitparamfunc = @(x,xv)(+x(1)*modcosh(+exp(-x(2)),xv,nt)+x(3)*modcosh(+exp(-x(2))+exp(-x(4)),xv,nt));
+			fitparamfunc = @(x,xv)(+x(1)*modcosh(x(2),xv,nt)+x(3)*modcosh(x(4),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))))));
          case 9 % cosh 1 oscil 2
             guess = [coeff(1) coeff(2) coeff(7) coeff(8) coeff(9) coeff(10) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*modcosh(+exp(-x(4)),xv,nt)+x(5)*modcosh(+exp(-x(4))+exp(-x(6)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*modcosh(x(4),xv,nt)+x(5)*modcosh(x(6),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))))));
          case 10 % cosh 2 oscil 2
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) coeff(7) coeff(8) coeff(9) coeff(10) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*modcosh(+exp(-x(6)),xv,nt)+x(7)*modcosh(+exp(-x(6))+exp(-x(8)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt)+x(5)*modcosh(x(6),xv,nt)+x(7)*modcosh(x(8),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6))+exp(-x(8)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6))+exp(-x(8)))*(nt/2-xval(:)))))));
          case 11 % cosh 3 oscil 2
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) coeff(5) coeff(6) coeff(7) coeff(8) coeff(9) coeff(10) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*dircosh(+exp(-x(2))+exp(-x(4))+exp(-x(6)),xv,nt)+x(7)*modcosh(+exp(-x(8)),xv,nt)+x(9)*modcosh(+exp(-x(8))+exp(-x(10)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt)+x(5)*dircosh(x(6),xv,nt)+x(7)*modcosh(x(8),xv,nt)+x(9)*modcosh(x(10),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8)))*(nt/2-xval(:)))+x(9)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8))+exp(-x(10)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8)))*(nt/2-xval(:)))+x(9)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8))+exp(-x(10)))*(nt/2-xval(:)))))));
          case 12 % cosh 0 oscil 3
             guess = [coeff(7) coeff(8) coeff(9) coeff(10) coeff(11) coeff(12) ];
 			fitparamfunc = @(x,xv)(+x(1)*modcosh(+exp(-x(2)),xv,nt)+x(3)*modcosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*modcosh(+exp(-x(2))+exp(-x(4))+exp(-x(6)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*modcosh(x(2),xv,nt)+x(3)*modcosh(x(4),xv,nt)+x(5)*modcosh(x(6),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))))));
          case 13 % cosh 1 oscil 3
             guess = [coeff(1) coeff(2) coeff(7) coeff(8) coeff(9) coeff(10) coeff(11) coeff(12) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*modcosh(+exp(-x(4)),xv,nt)+x(5)*modcosh(+exp(-x(4))+exp(-x(6)),xv,nt)+x(7)*modcosh(+exp(-x(4))+exp(-x(6))+exp(-x(8)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*modcosh(x(4),xv,nt)+x(5)*modcosh(x(6),xv,nt)+x(7)*modcosh(x(8),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4))+exp(-x(6))+exp(-x(8)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(4))+exp(-x(6))+exp(-x(8)))*(nt/2-xval(:)))))));
          case 14 % cosh 2 oscil 3
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) coeff(7) coeff(8) coeff(9) coeff(10) coeff(11) coeff(12) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*modcosh(+exp(-x(6)),xv,nt)+x(7)*modcosh(+exp(-x(6))+exp(-x(8)),xv,nt)+x(9)*modcosh(+exp(-x(6))+exp(-x(8))+exp(-x(10)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt)+x(5)*modcosh(x(6),xv,nt)+x(7)*modcosh(x(8),xv,nt)+x(9)*modcosh(x(10),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6))+exp(-x(8)))*(nt/2-xval(:)))+x(9)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6))+exp(-x(8))+exp(-x(10)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6))+exp(-x(8)))*(nt/2-xval(:)))+x(9)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(6))+exp(-x(8))+exp(-x(10)))*(nt/2-xval(:)))))));
          case 15 % cosh 3 oscil 3
             guess = [coeff(1) coeff(2) coeff(3) coeff(4) coeff(5) coeff(6) coeff(7) coeff(8) coeff(9) coeff(10) coeff(11) coeff(12) ];
 			fitparamfunc = @(x,xv)(+x(1)*dircosh(+exp(-x(2)),xv,nt)+x(3)*dircosh(+exp(-x(2))+exp(-x(4)),xv,nt)+x(5)*dircosh(+exp(-x(2))+exp(-x(4))+exp(-x(6)),xv,nt)+x(7)*modcosh(+exp(-x(8)),xv,nt)+x(9)*modcosh(+exp(-x(8))+exp(-x(10)),xv,nt)+x(11)*modcosh(+exp(-x(8))+exp(-x(10))+exp(-x(12)),xv,nt));
+			fitmassfunc = @(x,xv)(+x(1)*dircosh(x(2),xv,nt)+x(3)*dircosh(x(4),xv,nt)+x(5)*dircosh(x(6),xv,nt)+x(7)*modcosh(x(8),xv,nt)+x(9)*modcosh(x(10),xv,nt)+x(11)*modcosh(x(12),xv,nt));
             %chisqfunc = @(x)(1.0/(size(yval,2)-numel(guess))*(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8)))*(nt/2-xval(:)))+x(9)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8))+exp(-x(10)))*(nt/2-xval(:)))+x(11)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8))+exp(-x(10))+exp(-x(12)))*(nt/2-xval(:)))))'*(ycorr\(yval(:)-(+x(1)*cosh((+exp(-x(2)))*(nt/2-xval(:)))+x(3)*cosh((+exp(-x(2))+exp(-x(4)))*(nt/2-xval(:)))+x(5)*cosh((+exp(-x(2))+exp(-x(4))+exp(-x(6)))*(nt/2-xval(:)))+x(7)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8)))*(nt/2-xval(:)))+x(9)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8))+exp(-x(10)))*(nt/2-xval(:)))+x(11)*(1-2*mod(xval(:),2)).*cosh((+exp(-x(8))+exp(-x(10))+exp(-x(12)))*(nt/2-xval(:)))))));
 			otherwise % do case 1.
                 wut = 'wut'

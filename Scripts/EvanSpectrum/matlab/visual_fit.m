@@ -13,7 +13,7 @@ function visual_fit(blockval, num_elim)
 	% First, we pick a directory.
 
 
-	directory_answer = inputdlg('Enter an input directory.', 'Input', 1, {'FourPlusEight\f4plus8l24t48b40m010m080'});
+	directory_answer = inputdlg('Enter an input directory.', 'Input', 1, {'FourPlusEight\f4plus8l36t64b40m003m080'});
 	if (size(directory_answer,1) == 0)
 		return;
 	end
@@ -156,19 +156,19 @@ function visual_fit(blockval, num_elim)
 	% Fit to only even time data? y/n
 	% Full or diagonal correlator matrix? 
 
-	fit_minimum = 5;
-	fit_maximum = parse_Nt-fit_minimum;
-	fit_fold = 0; % don't fold
+	fit_minimum = 10;
+	fit_maximum = 24;
+	fit_fold = 1; % don't fold
 	fit_ppp = 0; % don't positive parity project
 	fit_zero = 0; % don't normalize center to zero or "gap" it.
 	fit_even = 0; % fit all
 	fit_diag = 0; % fit full correlation matrix instead of diagonal.
-	fit_diff = 0; % fit original data, not finite diffs. 
-	fit_x_prec = 1e-10; % set the x precision of the fit.
+	fit_diff = 1; % fit original data, not finite diffs. 
+	fit_x_prec = 1e-20; % set the x precision of the fit.
 	
 	% Modify fit function: 
 	func_zshift = 0; % don't use zero-shifted cosh.
-	func_diff = 0; % don't use finite difference cosh.
+	func_diff = 1; % don't use finite difference cosh.
 
 	% Get correct cosh functions in place.
 	run get_cosh; 
