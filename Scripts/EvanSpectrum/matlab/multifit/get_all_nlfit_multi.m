@@ -1,5 +1,8 @@
 function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, fiteven, funcdiff, fitcosh, fitoscil, fitdiag, fit_xprec, coeff, constraints)
 
+	% add the path for jacobianest
+	%addpath('.\multifit\support','-end');
+
 	% Get the global dircosh, modcosh functions.
 	global dircosh;
 	global modcosh;
@@ -281,7 +284,7 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
             fit_output(count,2) = t2;
             
             
-			% Convert back!
+			% Convert back! 
             if (fitcosh > 0)
                 for a=1:fitcosh
                     fit_output(count, 2+2*a) = exp(-temp_guess(2*a));
@@ -304,8 +307,35 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
             
             
             fit_output(count,16) = 1.0-chi2cdf(fit_output(count,15)*dof, dof);
+			
+			% Get classical errors!
+			%{
+			undo_logmap = zeros(numel(temp_guess), 1);
+			undo_logmap(1:(2*fitcosh)) = fit_output(3:(2+2*fitcosh));
+			undo_logmap((2*fitcosh+1):(2*fitcosh+2*fitoscil)) = fit_output(9:(8+2*fitoscil));
+			
+			% This uses the method in:
+			% http://www.mathworks.com/matlabcentral/newsreader/view_thread/157530
+			
+			% jacobian matrix
+			cerr_function = @(x)(fitmassfunc(x,xval(:)));
+			J = jacobianest(cerr_function,undo_logmap);
+			
+			% Get cov of fit parameters.
+			% fit_output(count,15) is the chisq/dof.
+			Sigma = fit_output(count,15)*
 
-            fit_output = fit_output(1,:);
+			% I'll be lazy here, and use inv. Please, no flames,
+			% if you want a better approach, look in my tips and
+			% tricks doc.
+			Sigma = sdr^2*inv(J'*J);
+
+			% Parameter standard errors
+			se = sqrt(diag(Sigma))'
+			%}
+
+			% End scene!
+			fit_output = fit_output(1,:);
         else
             fit_output = [];
         end

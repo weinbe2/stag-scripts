@@ -392,20 +392,27 @@ function visual_fit(blockval, num_elim)
 				run render_update;
 				
 			case 12 % Reset Fit Options
-			
-				fit_minimum = 5;
-				fit_maximum = parse_Nt-fit_minimum;
-				fit_fold = 0; % don't fold
-				fit_ppp = 0; % don't positive parity project
-				fit_zero = 0; % don't zero the center of the correlator.
-				fit_even = 0; % fit all
-				fit_diag = 0; % fit full correlation matrix instead of diagonal.
-				fit_diff = 0; % fit original data, not finite diffs. 
-	
-				% Modify fit function: 
-				func_zshift = 0; % don't use zero-shifted cosh.
-				func_diff = 0; % don't use finite difference cosh.
-
+				
+				% Ask first!
+				choice = questdlg('Are you sure you want to reset the fit options?', 'Check!', ...
+					'Yes', 'No', 'Yes');
+				
+				if (strcmp(choice, 'Yes'))
+					
+					fit_minimum = 5;
+					fit_maximum = parse_Nt-fit_minimum;
+					fit_fold = 0; % don't fold
+					fit_ppp = 0; % don't positive parity project
+					fit_zero = 0; % don't zero the center of the correlator.
+					fit_even = 0; % fit all
+					fit_diag = 0; % fit full correlation matrix instead of diagonal.
+					fit_diff = 0; % fit original data, not finite diffs. 
+		
+					% Modify fit function: 
+					func_zshift = 0; % don't use zero-shifted cosh.
+					func_diff = 0; % don't use finite difference cosh.
+				end
+				
 				run render_update;
 				
 			case 4 % Set Initial Params
@@ -589,9 +596,16 @@ function visual_fit(blockval, num_elim)
 			
 				
 			case 13 % Reset Params
-                coefficients = zeros(12,1);
-				errors = zeros(12, 1);
-                chisq_dof = 0.0; p_val = 0.0; cond_num = 0;
+			
+				% Ask first!
+				choice = questdlg('Are you sure you want to reset the fit params?', 'Check!', ...
+					'Yes', 'No', 'Yes');
+				
+				if (strcmp(choice, 'Yes'))
+					coefficients = zeros(12,1);
+					errors = zeros(12, 1);
+					chisq_dof = 0.0; p_val = 0.0; cond_num = 0;
+				end
 				
 				run render_update;
 				
