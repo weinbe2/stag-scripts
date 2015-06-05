@@ -216,6 +216,7 @@ function visual_fit(blockval, num_elim)
 						'Set Constraints', ...
 						'Perform Fit', ...
 						'Perform Jackknife', ...
+						'Save Modified Correlator', ...
 						'Begin Saving Results', ...
 						'End Saving Results', ...
 						'Change Directory', ...
@@ -227,7 +228,7 @@ function visual_fit(blockval, num_elim)
 		option_answer = listdlg('PromptString','Choose an option.','SelectionMode', 'single', 'ListString', option_list);
 		
 		if (isempty(option_answer))
-			option_answer = 12;
+			option_answer = 13;
 		end
 		
 		switch option_answer
@@ -422,7 +423,7 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 13 % Reset Fit Options
+			case 14 % Reset Fit Options
 				
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit options?', 'Check!', ...
@@ -628,7 +629,7 @@ function visual_fit(blockval, num_elim)
 				clear('new_guess_answers'); 
 			
 				
-			case 14 % Reset Params
+			case 15 % Reset Params
 			
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit params?', 'Check!', ...
@@ -642,7 +643,7 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 15 % Reset Constraints
+			case 16 % Reset Constraints
                 constraints = zeros(12,1);
                 chisq_dof = 0.0; p_val = 0.0; cond_num = 0;
 				
@@ -773,7 +774,7 @@ function visual_fit(blockval, num_elim)
 				clear('rescale_sum'); clear('rescale_err'); clear('rescale_cov_mat');
 				
 			
-			case 11 % Change Directory
+			case 12 % Change Directory
 				directory_tmp = inputdlg('Enter an input directory.', 'Input', 1, directory_answer);
 				
                 
@@ -891,7 +892,7 @@ function visual_fit(blockval, num_elim)
 					
 				end
 			
-			case 12 % Change State
+			case 13 % Change State
 				%spectrum_list = {'ps', 'sc', 'i5', 'ij', 'r0', 'ris', 'rij', 'ri5', 'ps2', 'nu', 'de'};
 				
 				spectrum_guess = listdlg('PromptString','Enter a spectrum to look at.','SelectionMode', 'single', 'ListString', spectrum_list, 'InitialValue', spectrum_answer);
@@ -954,13 +955,13 @@ function visual_fit(blockval, num_elim)
 				
 				clear('spectrum_guess');
 				
-			case 9 % Begin saving.
+			case 10 % Begin saving.
 				if (saving == 0)
 					saving = 1;
 					results_save = zeros(1,40);
 					run render_update;
 				end
-			case 10 % End saving.
+			case 11 % End saving.
 				if (saving == 1)
 					saving = 0;
 					
@@ -968,13 +969,41 @@ function visual_fit(blockval, num_elim)
 					[temp_fname, temp_directory] = uiputfile('*.*', 'Save file...', strcat(['../../../' directory_answer{1} '/spectrum2/multifits/']));
 					
 					if (temp_fname ~= 0)
-                        save(strcat([temp_directory, temp_fname]), 'results_save', '-ascii');
+                        save(strcat([temp_directory, temp_fname]), 'results_save', '-ascii', '-double');
 						results_save = zeros(1,40);
                     end
 					
 					run render_update;
 				end
-			case 16
+			case 9 % Save modified correlator 
+			
+				% get the data in shape!
+				run render_update;
+				
+				% Prepare data it!
+				save_data = zeros(parse_Nt,3);
+				save_data(:,1) = 0:(parse_Nt-1);
+				if (fit_diff == 1) % shift forward by 0.5
+					save_data(:,1) = save_data(:,1) + 0.5;
+				end
+				save_data(:,2) = rescale_sum(:);
+				save_data(:,3) = rescale_err(:);
+				
+				% First, ask for directory to save the correlator.
+				[temp_fname, temp_directory] = uiputfile('*.*', 'Save modified correlator...', strcat(['../../../' directory_answer{1} '/spectrum2/sum/']));
+				
+				if (temp_fname ~= 0)
+					save(strcat([temp_directory, temp_fname]), 'save_data', '-ascii', '-double');
+				end
+				
+				% Next, ask for a place to save the covariance.
+				[temp_fname, temp_directory] = uiputfile('*.*', 'Save modified variance-covariance...', strcat(['../../../' directory_answer{1} '/spectrum2/sum/']));
+				
+				if (temp_fname ~= 0)
+					save(strcat([temp_directory, temp_fname]), 'rescale_cov_mat', '-ascii', '-double');
+				end
+				
+			case 17
 				flag = 0;
 		end
 		

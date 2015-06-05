@@ -25,7 +25,7 @@
 		clear('rescale_yt'); clear('rescale_yerrt');
     end
 	
-	clear('rescale_sum'); clear('rescale_err');
+	%clear('rescale_sum'); clear('rescale_err');
 	
 	% Plot!
 	figure(h);
