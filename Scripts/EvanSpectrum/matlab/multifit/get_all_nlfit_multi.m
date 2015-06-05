@@ -1,4 +1,4 @@
-function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, fiteven, funcdiff, fitcosh, fitoscil, fitdiag, fit_xprec, coeff, constraints)
+function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, fiteven, fitcut, funcdiff, fitcosh, fitoscil, fitdiag, fit_xprec, coeff, constraints)
 
 	% add the path for jacobianest
 	%addpath('.\multifit\support','-end');
@@ -165,9 +165,36 @@ function [fit_output] = get_all_nlfit_multi(corr_fcn, corr_mat, tmin, tmax, nt, 
 			dof = dof+sum(constr_flags);
 		end
 	
-		% Build the chisq function! This can be modified if we're doing
-		% finite difference fits, for example.
-		chisqfunc = @(x)(1.0/(dof)*(yval(:)-fitparamfunc(x,xval(:)))'*(ycorr\(yval(:)-fitparamfunc(x,xval(:)))));
+		% Build the chisq function!
+		% This depends on if we need to SVD or not.
+		if (fitcut == 0)
+			chisqfunc = @(x)(1.0/(dof)*(yval(:)-fitparamfunc(x,xval(:)))'*(ycorr\(yval(:)-fitparamfunc(x,xval(:)))));
+		else % cut things!
+			[U, S, V] = svd(ycorr);
+			
+			% S contains the singular values in decreasing order.
+			num_vals_save = size(yval, 2) - fitcut; 
+            if ((dof-fitcut) <= 0) % fit is meaningless!
+                fit_output = [];
+                return;
+            end
+            
+			for i=1:num_vals_save % invert first batch.
+				S(i,i) = 1/S(i,i);
+			end
+			for i=(num_vals_save+1):size(yval,2)
+				S(i,i) = 0; % remove the rest.
+			end
+			% rebuild cov inverse.
+			ycorr_inv = U*S*V';
+			
+			% fix degrees of freedom.
+			dof = dof-fitcut;
+			
+			% build chisq.
+			chisqfunc = @(x)(1.0/(dof)*(yval(:)-fitparamfunc(x,xval(:)))'*(ycorr_inv*(yval(:)-fitparamfunc(x,xval(:)))));
+			
+		end
 		
 		% check if we care about constraints.
 		if (~exist('constraints', 'var'))

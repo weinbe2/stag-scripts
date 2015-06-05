@@ -165,6 +165,9 @@ function visual_fit(blockval, num_elim)
 	fit_diff = 1; % fit original data, not finite diffs. 
 	fit_x_prec = 1e-20; % set the x precision of the fit.
 	
+	fit_cut = 0; % pick how many singular values to cut.
+				 % Note that this also modifies the dof.
+	
 	% Modify fit function: 
 	func_fold = 1; % fold 
 	func_zshift = 0; % don't use zero-shifted cosh.
@@ -224,6 +227,7 @@ function visual_fit(blockval, num_elim)
 						'Reset Fit Options', ...
 						'Reset Initial Guess', ...
 						'Reset Constraints', ...
+						'Visualize Singular Values', ...
                         'Exit'};
 		option_answer = listdlg('PromptString','Choose an option.','SelectionMode', 'single', 'ListString', option_list);
 		
@@ -291,10 +295,11 @@ function visual_fit(blockval, num_elim)
 										'Maximum Fit t (-1 for symmetric fit):', ...
 										'Fit X Precion:', ...
 										'Fit Every Other (0 no, 1 yes)', ...
+										'Cut Singular Values', ...
 										'Diagonal Correlator (0 no, 1 yes)', ...
 										'Zeroed Cosh (0 no, 1 yes)', ...
 										'Finite Difference Cosh (0 no, 1 yes)'}, ...
-										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec),  num2str(fit_even), num2str(fit_diag), num2str(func_zshift),  num2str(func_diff)});
+										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec),  num2str(fit_even), num2str(fit_cut), num2str(fit_diag), num2str(func_zshift),  num2str(func_diff)});
 				
 				
 				
@@ -330,21 +335,28 @@ function visual_fit(blockval, num_elim)
 						end
 					end
 					
-					tmpfitdiag = str2num(new_fit_min{5});
+					tmpfitsvd = str2num(new_fit_min{5});
+					if (~(size(tmpfitsvd, 1) == 0))
+						if (tmpfitsvd >= 0 && tmpfitsvd <= parse_Nt)
+							fit_cut = tmpfitsvd;
+						end
+					end
+					
+					tmpfitdiag = str2num(new_fit_min{6});
 					if (~(size(tmpfitdiag, 1) == 0))
 						if (tmpfitdiag == 0 || tmpfitdiag == 1)
 							fit_diag = tmpfitdiag;
 						end
 					end
 					
-					tmpfunczshift = str2num(new_fit_min{6});
+					tmpfunczshift = str2num(new_fit_min{7});
 					if (~(size(tmpfunczshift, 1) == 0))
 						if (tmpfunczshift == 0 || tmpfunczshift == 1)
 							func_zshift = tmpfunczshift;
 						end
 					end
 					
-					tmpfuncdiff = str2num(new_fit_min{7});
+					tmpfuncdiff = str2num(new_fit_min{8});
 					if (~(size(tmpfuncdiff, 1) == 0))
 						if (tmpfuncdiff == 0 || tmpfuncdiff == 1)
 							func_diff = tmpfuncdiff;
@@ -356,6 +368,7 @@ function visual_fit(blockval, num_elim)
 				clear('tmpfitmax');
 				clear('tmpfiteven');
 				clear('tmpfitdiag');
+				clear('tmpfitsvd');
 				clear('tmpxprec');
 				clear('tmpfunczshift');
 				clear('tmpfuncdiff');
@@ -438,7 +451,9 @@ function visual_fit(blockval, num_elim)
 					fit_even = 0; % fit all
 					fit_diag = 0; % fit full correlation matrix instead of diagonal.
 					fit_diff = 0; % fit original data, not finite diffs. 
-		
+					fit_cut = 0; % cut no singular values.
+					
+					
 					% Modify fit function: 
 					func_fold = 1; %fold
 					func_zshift = 0; % don't use zero-shifted cosh.
@@ -654,7 +669,7 @@ function visual_fit(blockval, num_elim)
 				run prepare_data;
 			
 				% Whelp, here we go!
-				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, fit_cut, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
 				
 				clear('rescale_sum'); clear('rescale_err'); clear('rescale_cov_mat');
 				
@@ -701,7 +716,7 @@ function visual_fit(blockval, num_elim)
 				run prepare_data;
 			
 				% Whelp, here we go!
-				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+				the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, fit_cut, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
 				
 				
 				if (~(size(the_fit_output, 1) == 0))
@@ -717,7 +732,7 @@ function visual_fit(blockval, num_elim)
 					jack_flag = 1; is_blocking = 1;
 					for b=1:num_blocks
                         if (jack_flag == 1)
-    						block_fit_output = get_all_nlfit_multi(rescale_jack(:,b), rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+    						block_fit_output = get_all_nlfit_multi(rescale_jack(:,b), rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, fit_cut, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
 						
         					if (numel(block_fit_output) == 0)
             					jack_flag = 0;
@@ -1003,7 +1018,66 @@ function visual_fit(blockval, num_elim)
 					save(strcat([temp_directory, temp_fname]), 'rescale_cov_mat', '-ascii', '-double');
 				end
 				
-			case 17
+			case 17 % visualize singular values.
+				% Get the appropriate covariance matrix.
+				
+				t1 = fit_minimum;
+				t2 = fit_maximum;
+				
+				if (fit_even == 0) % fit to all
+					if (func_diff == 0) % still all
+						xval = t1:t2;
+						yval = rescale_sum((t1+1):(t2+1))';
+						ycorr = rescale_cov_mat((t1+1):(t2+1),(t1+1):(t2+1));
+					else % finite diff! one less data.
+						xval = t1:(t2-1);
+						yval = rescale_sum((t1+1):t2)';
+						ycorr = rescale_cov_mat((t1+1):t2,(t1+1):t2);
+					end
+				else % only fit to even...
+					if (func_diff == 0) % no finite diff.
+						if (mod(t1,2)==0)
+							xval = t1:2:t2;
+						else
+							xval = (t1+1):2:t2;
+						end
+						yval = rescale_sum((xval+1))';
+						ycorr = rescale_cov_mat((xval+1),(xval+1));
+					else % finite diff! careful about end.
+						if (mod(t1,2)==0)
+							xval = t1:2:(t2-1);
+						else
+							xval = (t1+1):2:(t2-1);
+						end
+						yval = rescale_sum((xval+1))';
+						ycorr = rescale_cov_mat((xval+1),(xval+1));
+					end
+                end
+				
+                diagvals = sort(diag(ycorr)); % get the diagonal values.
+				svals = fliplr(svd(ycorr)'); % minimum first.
+				
+				
+				h_svd = figure();
+				%movegui(h, 'northwest');
+				set(h_svd, 'Name', 'SVD visualization');
+				h_svals = semilogy(svals,'xb'); hold on;
+                h_dvals = semilogy(diagvals, 'or'); hold off;
+                legend([h_svals, h_dvals],'Singular Values', 'Diagonal Elements', 'Location', 'southeast');
+				waitfor(h_svd);
+				
+				% clear everything.
+				clear('h_svd');
+                clear('h_svals');
+                clear('h_dvals');
+				clear('svals');
+				clear('xval');
+				clear('yval');
+				clear('ycorr');
+				clear('t1');
+				clear('t2');
+				
+			case 18
 				flag = 0;
 		end
 		
