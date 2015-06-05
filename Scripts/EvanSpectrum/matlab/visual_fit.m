@@ -772,8 +772,17 @@ function visual_fit(blockval, num_elim)
                     % "sg_stoch" to the list of states.
                     if (exist(strcat(['..\..\..\' directory_answer{1} '\spectrum2\stoch\PBPPART.dat']), 'file') && exist(strcat(['..\..\..\' directory_answer{1} '\spectrum2\stoch\SPECTRUM.dat']), 'file'))
                         % We can build dc_stoch and sg_stoch
-                        spectrum_new_list{size(spectrum_list,2)+1} = 'dc_stoch';
-                        spectrum_new_list{size(spectrum_list,2)+1} = 'sg_stoch';
+						cnt = cnt+1;
+                        spectrum_new_list{size(spectrum_new_list,2)+1} = 'dc_stoch';
+						if (strcmp('dc_stoch', spectrum_text))
+							match = cnt;
+						end
+						
+						cnt = cnt+1;
+                        spectrum_new_list{size(spectrum_new_list,2)+1} = 'sg_stoch';
+						if (strcmp('sg_stoch', spectrum_text))
+							match = cnt;
+						end
                     end
 
 
@@ -823,6 +832,9 @@ function visual_fit(blockval, num_elim)
 					%parse_Nt = 48;
 					%blocksize = 10;
 					volume = parse_Ns^3; %*48;
+					fl_flavor = fl_l/4;
+					
+					xrange = (0:(parse_Nt-1))';
 					
 					% Import data.
 					[scalar_sum, scalar_jack, scalar_cov_mat, ...
@@ -874,6 +886,8 @@ function visual_fit(blockval, num_elim)
 					%parse_Nt = 48;
 					%blocksize = 10;
 					volume = parse_Ns^3; %*48;
+					fl_flavor = fl_l/4;
+					xrange = (0:(parse_Nt-1))';
 					
 					% Import data.
 					[scalar_sum, scalar_jack, scalar_cov_mat, ...
