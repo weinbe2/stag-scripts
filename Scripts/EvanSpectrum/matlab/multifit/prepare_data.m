@@ -9,12 +9,8 @@ rescale_corr = cat(2, scalar_sum, scalar_jack, scalar_jack_single);
 
 % First---check if we fold!
 if (func_fold == 1) % fold!
-    for tmp_i = 1:(parse_Nt/2)
-        rescale_corr(tmp_i+1,:) = 0.5*(rescale_corr(tmp_i+1,:)+rescale_corr((parse_Nt-tmp_i)+1,:));
-    end
-    for tmp_i = (parse_Nt/2+1):(parse_Nt-1)
-        rescale_corr(tmp_i+1,:) = rescale_corr(parse_Nt-tmp_i+1,:);
-    end
+	% Use the fold_data function!
+	rescale_corr = fold_data(rescale_corr, is_baryon);
 end
 
 % Next---check if we positive parity project it!

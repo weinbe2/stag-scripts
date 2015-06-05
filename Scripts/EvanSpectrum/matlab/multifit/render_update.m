@@ -97,12 +97,22 @@
     end
 	
 	cosh_string = '';
-	if (func_zshift == 0 && func_diff == 0)
-		cosh_string = 'Normal';
-	elseif (func_diff == 1) % zero shift doesn't matter.
-		cosh_string = 'Finite Difference';
-	else % must be zero shifted.
-		cosh_string = 'Zero Shifted';
+	if (is_baryon == 0)
+		if (func_zshift == 0 && func_diff == 0)
+			cosh_string = 'Normal';
+		elseif (func_diff == 1) % zero shift doesn't matter.
+			cosh_string = 'Finite Difference';
+		else % must be zero shifted.
+			cosh_string = 'Zero Shifted';
+		end
+	else
+		if (func_zshift == 0 && func_diff == 0)
+			cosh_string = 'Baryon';
+		elseif (func_diff == 1) % zero shift doesn't matter.
+			cosh_string = 'Baryon Finite Difference';
+		else % must be zero shifted.
+			cosh_string = 'Baryon Zero Shifted';
+		end
 	end
 	
 	diff_string = '';

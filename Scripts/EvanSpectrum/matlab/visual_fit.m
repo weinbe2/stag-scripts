@@ -169,7 +169,14 @@ function visual_fit(blockval, num_elim)
 	func_fold = 1; % fold 
 	func_zshift = 0; % don't use zero-shifted cosh.
 	func_diff = 1; % use finite difference cosh.
-
+	
+	% See if it's a baryon...
+	if (strcmp(spectrum_text, 'nu') || strcmp(spectrum_text, 'de'))
+		is_baryon = 1;
+	else
+		is_baryon = 0;
+	end
+	
 	% Get correct cosh functions in place.
 	run get_cosh; 
 	
@@ -436,6 +443,8 @@ function visual_fit(blockval, num_elim)
 					func_zshift = 0; % don't use zero-shifted cosh.
 					func_diff = 0; % don't use finite difference cosh.
 				end
+				
+				run get_cosh; 
 				
 				run render_update;
 				
@@ -866,6 +875,14 @@ function visual_fit(blockval, num_elim)
 						get_correlator(strcat(['../../../' directory_answer{1}]), ...
 						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
 						
+					% See if it's a baryon...
+					if (strcmp(spectrum_text, 'nu') || strcmp(spectrum_text, 'de'))
+						is_baryon = 1;
+					else
+						is_baryon = 0;
+					end
+					
+					run get_cosh; 
 					
                     run render_update;
 					
@@ -921,6 +938,15 @@ function visual_fit(blockval, num_elim)
 		
 					saving = 0;
 					results_save = zeros(1, 40);
+					
+					% See if it's a baryon...
+					if (strcmp(spectrum_text, 'nu') || strcmp(spectrum_text, 'de'))
+						is_baryon = 1;
+					else
+						is_baryon = 0;
+					end
+					
+					run get_cosh; 
 					
 					run render_update;
 					
