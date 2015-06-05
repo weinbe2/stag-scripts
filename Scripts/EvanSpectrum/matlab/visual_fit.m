@@ -158,7 +158,6 @@ function visual_fit(blockval, num_elim)
 
 	fit_minimum = 10;
 	fit_maximum = 24;
-	fit_fold = 1; % don't fold
 	fit_ppp = 0; % don't positive parity project
 	fit_zero = 0; % don't normalize center to zero or "gap" it.
 	fit_even = 0; % fit all
@@ -167,8 +166,9 @@ function visual_fit(blockval, num_elim)
 	fit_x_prec = 1e-20; % set the x precision of the fit.
 	
 	% Modify fit function: 
+	func_fold = 1; % fold 
 	func_zshift = 0; % don't use zero-shifted cosh.
-	func_diff = 1; % don't use finite difference cosh.
+	func_diff = 1; % use finite difference cosh.
 
 	% Get correct cosh functions in place.
 	run get_cosh; 
@@ -204,6 +204,7 @@ function visual_fit(blockval, num_elim)
 		option_list = {'Rescale+Shift (Visual Only)', ...
 						'Set Fit Form', ...
 						'Set Fit Options', ...
+						'Set Data Modifications', ...
 						'Set Initial Guess', ...
 						'Set Constraints', ...
 						'Perform Fit', ...
@@ -219,7 +220,7 @@ function visual_fit(blockval, num_elim)
 		option_answer = listdlg('PromptString','Choose an option.','SelectionMode', 'single', 'ListString', option_list);
 		
 		if (isempty(option_answer))
-			option_answer = 11;
+			option_answer = 12;
 		end
 		
 		switch option_answer
@@ -278,18 +279,15 @@ function visual_fit(blockval, num_elim)
 				% Full or diagonal correlator matrix? 
 				% Jackknife: number to eliminate on jackknife?
 			
-				new_fit_min = inputdlg({'Minimum Fit t:', 'Maximum Fit t (-1 for symmetric fit):', 'Fit X Precion:', ...
-										'Fold (0 no, 1 yes):', 'Parity Project (0 no, 1 positive, -1 negative):', 'Zero Center (0 no, 1 yes, -1 gap)', ...
-										'Fit Every Other (0 no, 1 yes)', 'Diagonal Correlator (0 no, 1 yes)', 'Zeroed Cosh (0 no, 1 yes)', 'Finite Difference Data (0 no, 1 yes)', 'Finite Difference Cosh (0 no, 1 yes)'}, ...
-										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec), num2str(fit_fold), num2str(fit_ppp), num2str(fit_zero), num2str(fit_even), num2str(fit_diag), num2str(func_zshift), num2str(fit_diff), num2str(func_diff)});
+				new_fit_min = inputdlg({'Minimum Fit t:', ...
+										'Maximum Fit t (-1 for symmetric fit):', ...
+										'Fit X Precion:', ...
+										'Fit Every Other (0 no, 1 yes)', ...
+										'Diagonal Correlator (0 no, 1 yes)', ...
+										'Zeroed Cosh (0 no, 1 yes)', ...
+										'Finite Difference Cosh (0 no, 1 yes)'}, ...
+										'Input', 1, {num2str(fit_minimum), num2str(fit_maximum), num2str(fit_x_prec),  num2str(fit_even), num2str(fit_diag), num2str(func_zshift),  num2str(func_diff)});
 				
-				%fit_minimum = 5;
-				%fit_maximum = parse_Nt-fit_minimum;
-				%fit_fold = 0; % don't fold
-				%fit_ppp = 0; % don't positive parity project
-				%fit_zero = 0;
-				%fit_even = 0; % fit all
-				%fit_diag = 0; % fit full correlation matrix instead of diagonal.
 				
 				
 				if (~(size(new_fit_min, 1) == 0)) % Make sure we didn't get a cancel!
@@ -317,56 +315,28 @@ function visual_fit(blockval, num_elim)
 						end
 					end
 					
-					tmpfitfold = str2num(new_fit_min{4});
-					if (~(size(tmpfitfold, 1) == 0))
-						if (tmpfitfold == 0 || tmpfitfold == 1)
-							fit_fold = tmpfitfold;
-						end
-					end
-					
-					tmpfitppp = str2num(new_fit_min{5});
-					if (~(size(tmpfitppp, 1) == 0))
-						if (tmpfitppp == 0 || tmpfitppp == 1 || tmpfitppp == -1)
-							fit_ppp = tmpfitppp;
-						end
-					end
-					
-					tmpfitzero = str2num(new_fit_min{6});
-					if (~(size(tmpfitzero, 1) == 0))
-						if (tmpfitzero == 0 || tmpfitzero == 1 || tmpfitzero == -1)
-							fit_zero = tmpfitzero;
-						end
-					end
-					
-					tmpfiteven = str2num(new_fit_min{7});
+					tmpfiteven = str2num(new_fit_min{4});
 					if (~(size(tmpfiteven, 1) == 0))
 						if (tmpfiteven == 0 || tmpfiteven == 1)
 							fit_even = tmpfiteven;
 						end
 					end
 					
-					tmpfitdiag = str2num(new_fit_min{8});
+					tmpfitdiag = str2num(new_fit_min{5});
 					if (~(size(tmpfitdiag, 1) == 0))
 						if (tmpfitdiag == 0 || tmpfitdiag == 1)
 							fit_diag = tmpfitdiag;
 						end
 					end
 					
-					tmpfunczshift = str2num(new_fit_min{9});
+					tmpfunczshift = str2num(new_fit_min{6});
 					if (~(size(tmpfunczshift, 1) == 0))
 						if (tmpfunczshift == 0 || tmpfunczshift == 1)
 							func_zshift = tmpfunczshift;
 						end
 					end
 					
-					tmpfitdiff = str2num(new_fit_min{10});
-					if (~(size(tmpfitdiff, 1) == 0))
-						if (tmpfitdiff == 0 || tmpfitdiff == 1)
-							fit_diff = tmpfitdiff;
-						end
-					end
-					
-					tmpfuncdiff = str2num(new_fit_min{11});
+					tmpfuncdiff = str2num(new_fit_min{7});
 					if (~(size(tmpfuncdiff, 1) == 0))
 						if (tmpfuncdiff == 0 || tmpfuncdiff == 1)
 							func_diff = tmpfuncdiff;
@@ -376,14 +346,10 @@ function visual_fit(blockval, num_elim)
 				
 				clear('tmpfitmin');
 				clear('tmpfitmax');
-				clear('tmpfitfold');
-				clear('tmpfitppp');
-				clear('tmpfitzero');
 				clear('tmpfiteven');
 				clear('tmpfitdiag');
 				clear('tmpxprec');
 				clear('tmpfunczshift');
-				clear('tmpfitdiff');
 				clear('tmpfuncdiff');
 				
 				% Fix the cosh.
@@ -391,7 +357,65 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 12 % Reset Fit Options
+			case 4 % Set Data Manipulations
+				
+				% Options: tmin, tmax
+				% Fold? y/n
+				% Positive Parity Project? y/n
+				% Fit to only even time data? y/n
+				% Full or diagonal correlator matrix? 
+				% Jackknife: number to eliminate on jackknife?
+			
+				new_fit_min = inputdlg({'Fold (0 no, 1 yes):', 'Parity Project (0 no, 1 positive, -1 negative):', 'Zero Center (0 no, 1 yes, -1 gap)', ...
+										'Finite Difference Data (0 no, 1 yes)'}, ...
+										'Input', 1, {num2str(func_fold), num2str(fit_ppp), num2str(fit_zero),   num2str(fit_diff)});
+				
+				
+				
+				if (~(size(new_fit_min, 1) == 0)) % Make sure we didn't get a cancel!
+					
+					tmpfuncfold = str2num(new_fit_min{1});
+					if (~(size(tmpfuncfold, 1) == 0))
+						if (tmpfuncfold == 0 || tmpfuncfold == 1)
+							func_fold = tmpfuncfold;
+						end
+					end
+					
+					tmpfitppp = str2num(new_fit_min{2});
+					if (~(size(tmpfitppp, 1) == 0))
+						if (tmpfitppp == 0 || tmpfitppp == 1 || tmpfitppp == -1)
+							fit_ppp = tmpfitppp;
+						end
+					end
+					
+					tmpfitzero = str2num(new_fit_min{3});
+					if (~(size(tmpfitzero, 1) == 0))
+						if (tmpfitzero == 0 || tmpfitzero == 1 || tmpfitzero == -1)
+							fit_zero = tmpfitzero;
+						end
+					end
+					
+					tmpfitdiff = str2num(new_fit_min{4});
+					if (~(size(tmpfitdiff, 1) == 0))
+						if (tmpfitdiff == 0 || tmpfitdiff == 1)
+							fit_diff = tmpfitdiff;
+						end
+					end
+					
+				end
+				
+				
+				clear('tmpfitfold');
+				clear('tmpfitppp');
+				clear('tmpfitzero');
+				clear('tmpfitdiff');
+				
+				% Fix the cosh.
+				run get_cosh;
+				
+				run render_update;
+				
+			case 13 % Reset Fit Options
 				
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit options?', 'Check!', ...
@@ -401,7 +425,6 @@ function visual_fit(blockval, num_elim)
 					
 					fit_minimum = 5;
 					fit_maximum = parse_Nt-fit_minimum;
-					fit_fold = 0; % don't fold
 					fit_ppp = 0; % don't positive parity project
 					fit_zero = 0; % don't zero the center of the correlator.
 					fit_even = 0; % fit all
@@ -409,13 +432,14 @@ function visual_fit(blockval, num_elim)
 					fit_diff = 0; % fit original data, not finite diffs. 
 		
 					% Modify fit function: 
+					func_fold = 1; %fold
 					func_zshift = 0; % don't use zero-shifted cosh.
 					func_diff = 0; % don't use finite difference cosh.
 				end
 				
 				run render_update;
 				
-			case 4 % Set Initial Params
+			case 5 % Set Initial Params
 				new_guess_answers = inputdlg({'Cosh: Amplitude 1:', 'Cosh: Mass 1:', 'Cosh: Amplitude 2:', 'Cosh: Mass 2:', 'Cosh: Amplitude 3:', 'Cosh: Mass 3:',...
                     'Osc: Amplitude 4:', 'Osc: Mass 4:', 'Osc: Amplitude 5:', 'Osc: Mass 5:', 'Osc: Amplitude 6:', 'Osc: Mass 6:'}, ...
                     'Input', 1, {num2str(coefficients(1)), num2str(coefficients(2)), num2str(coefficients(3)), num2str(coefficients(4)), ...
@@ -502,7 +526,7 @@ function visual_fit(blockval, num_elim)
 				
 				clear('new_guess_answers'); 
 			
-			case 5 % Set Constraints
+			case 6 % Set Constraints
 			
 				% Note! If the constraint is >1e-22, <1e-18,
 				% it is set as an exact equality (basically...) 
@@ -595,7 +619,7 @@ function visual_fit(blockval, num_elim)
 				clear('new_guess_answers'); 
 			
 				
-			case 13 % Reset Params
+			case 14 % Reset Params
 			
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit params?', 'Check!', ...
@@ -609,13 +633,13 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 14 % Reset Constraints
+			case 15 % Reset Constraints
                 constraints = zeros(12,1);
                 chisq_dof = 0.0; p_val = 0.0; cond_num = 0;
 				
 				run render_update;
 				
-			case 6 % Perform Fit
+			case 7 % Perform Fit
 			
 				run prepare_data;
 			
@@ -662,7 +686,7 @@ function visual_fit(blockval, num_elim)
 					run render_update
 				end
 				
-			case 7 % Perform Jackknife, finally.
+			case 8 % Perform Jackknife, finally.
 			
 				run prepare_data;
 			
@@ -740,7 +764,7 @@ function visual_fit(blockval, num_elim)
 				clear('rescale_sum'); clear('rescale_err'); clear('rescale_cov_mat');
 				
 			
-			case 10 % Change Directory
+			case 11 % Change Directory
 				directory_tmp = inputdlg('Enter an input directory.', 'Input', 1, directory_answer);
 				
                 
@@ -850,7 +874,7 @@ function visual_fit(blockval, num_elim)
 					
 				end
 			
-			case 11 % Change State
+			case 12 % Change State
 				%spectrum_list = {'ps', 'sc', 'i5', 'ij', 'r0', 'ris', 'rij', 'ri5', 'ps2', 'nu', 'de'};
 				
 				spectrum_guess = listdlg('PromptString','Enter a spectrum to look at.','SelectionMode', 'single', 'ListString', spectrum_list, 'InitialValue', spectrum_answer);
@@ -904,13 +928,13 @@ function visual_fit(blockval, num_elim)
 				
 				clear('spectrum_guess');
 				
-			case 8 % Begin saving.
+			case 9 % Begin saving.
 				if (saving == 0)
 					saving = 1;
 					results_save = zeros(1,40);
 					run render_update;
 				end
-			case 9 % End saving.
+			case 10 % End saving.
 				if (saving == 1)
 					saving = 0;
 					
@@ -924,7 +948,7 @@ function visual_fit(blockval, num_elim)
 					
 					run render_update;
 				end
-			case 15
+			case 16
 				flag = 0;
 		end
 		

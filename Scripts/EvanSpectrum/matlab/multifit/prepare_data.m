@@ -8,7 +8,7 @@ rescale_corr = cat(2, scalar_sum, scalar_jack, scalar_jack_single);
 % var-covar matrix. 
 
 % First---check if we fold!
-if (fit_fold == 1) % fold!
+if (func_fold == 1) % fold!
     for tmp_i = 1:(parse_Nt/2)
         rescale_corr(tmp_i+1,:) = 0.5*(rescale_corr(tmp_i+1,:)+rescale_corr((parse_Nt-tmp_i)+1,:));
     end
