@@ -185,7 +185,7 @@ foreach my $params_ref (@ensemble_list)
 						
 						# Excellent! We have all the information, now spit it out to file.
 						open($file_handle, ">$data_directory/meas_conn/meas_conn_$ensemble");
-						print $file_handle "$ensemble $num_meas $bin_size";
+						print $file_handle "$ensemble $num_meas $bin_size\n";
 						close($file_handle);
 					}
 					else
@@ -241,7 +241,7 @@ foreach my $params_ref (@ensemble_list)
 						
 						# Excellent! We have all the information, now spit it out to file.
 						open($file_handle, ">$data_directory/meas_disc/meas_disc_$ensemble");
-						print $file_handle "$ensemble $num_meas $bin_size";
+						print $file_handle "$ensemble $num_meas $bin_size\n";
 						close($file_handle);
 					}
 					else
@@ -276,7 +276,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[0]);
 					open($file_handle, ">$data_directory/pion/pion_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
@@ -294,7 +294,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[0]);
 					open($file_handle, ">$data_directory/pion_i5/pion_i5_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
@@ -312,7 +312,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[0]);
 					open($file_handle, ">$data_directory/pion_ij/pion_ij_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
@@ -330,7 +330,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[0]);
 					open($file_handle, ">$data_directory/pion_sc/pion_sc_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
@@ -348,7 +348,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[1]);
 					open($file_handle, ">$data_directory/fpi/fpi_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
@@ -366,7 +366,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[0]);
 					open($file_handle, ">$data_directory/rho/rho_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
@@ -384,7 +384,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[1]);
 					open($file_handle, ">$data_directory/a0/a0_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
@@ -402,7 +402,7 @@ foreach my $params_ref (@ensemble_list)
 					
 					my @tmp_split = split(' ', $central_file[1]);
 					open($file_handle, ">$data_directory/axial/axial_$ensemble");
-					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]";
+					print $file_handle "$ensemble $tmp_split[0] $tmp_split[1]\n";
 					close($file_handle);
 				}
 				else
