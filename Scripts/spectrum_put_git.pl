@@ -98,7 +98,7 @@ for (my $i = 0; $i < @ARGV; $i++)
 				foreach my $indiv_ensemble (@ensemble_file)
 				{
 					chomp($indiv_ensemble);
-					print $indiv_ensemble."\n";
+					#print $indiv_ensemble."\n";
 					
 					my %params = name2param($indiv_ensemble);
 					$params{ensemble} = $indiv_ensemble;
@@ -189,7 +189,7 @@ foreach my $params_ref (@ensemble_list)
 	# Loop over all possible data measurements.
 	foreach my $data_pick (@data_list)
 	{
-		print "$ensemble $data_pick\n";
+		#print "$ensemble $data_pick\n";
 		switch ($data_pick)
 		{
 			case "meas_conn" {
