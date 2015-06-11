@@ -6,7 +6,7 @@ use BSMrun;
 use Switch;
 
 # Copy data into a git folder.
-# call: ./spectrum_put_git.pl -dir [relative path to Data folder] -ensembles [list of ensembles] -data {meas_conn|meas_disc|pion|pion_i5|pion_ij|pion_sc|fpi|rho|a0|axial}
+# call: ./spectrum_put_git.pl -dir [relative path to Data folder] -ensembles [list of ensembles] {-ensemblelist [relative path to ensemble list]} -data {meas_conn|meas_disc|pion|pion_i5|pion_ij|pion_sc|fpi|rho|a0|axial}
 
 if (@ARGV < 4)
 {
@@ -87,6 +87,55 @@ for (my $i = 0; $i < @ARGV; $i++)
 				push (@ensemble_list, \%params);
 				$i++;
 			}
+		}
+		case "ensemblelist" {
+			if (-e $ARGV[$i+1])
+			{
+				open($file_handle, "<".$ARGV[$i+1]);
+				my @ensemble_file = <$file_handle>;
+				close($file_handle);
+				
+				foreach my $indiv_ensemble (@ensemble_file)
+				{
+					chomp($indiv_ensemble);
+					
+					my %params = name2param($indiv_ensemble);
+					$params{ensemble} = $indiv_ensemble;
+					
+					if ($params{flavor} eq '4plus8') {
+						$params{have_l} = 4;
+						$params{have_h} = 8;
+					}
+					elsif ($params{flavor} eq '4plus4') {
+						$params{have_l} = 4;
+						$params{have_h} = 4;
+					}
+					elsif ($params{flavor} eq '8') {
+						$params{have_l} = 8;
+						$params{have_h} = 0;
+						$params{mh} = 0;
+					}
+					elsif ($params{flavor} eq '4') {
+						$params{have_l} = 4;
+						$params{have_h} = 0;
+						$params{mh} = 0;
+					}
+					elsif ($params{flavor} eq '12') {
+						$params{have_l} = 12;
+						$params{have_h} = 0;
+						$params{mh} = 0;
+					}
+				
+					push (@ensemble_list, \%params);
+					$i++;
+				}
+			}
+			else
+			{
+				die "Ensemble list $ARGV[$i+1] does not exist!\n";
+			}
+			
+			$i++;
 		}
 		case "data" {
 			# Loop over all subsequent entries until we hit the end or another flag.
