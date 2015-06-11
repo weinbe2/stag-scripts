@@ -189,6 +189,7 @@ foreach my $params_ref (@ensemble_list)
 	# Loop over all possible data measurements.
 	foreach my $data_pick (@data_list)
 	{
+		print "$ensemble $data_pick\n";
 		switch ($data_pick)
 		{
 			case "meas_conn" {
