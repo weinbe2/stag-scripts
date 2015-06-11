@@ -98,6 +98,7 @@ for (my $i = 0; $i < @ARGV; $i++)
 				foreach my $indiv_ensemble (@ensemble_file)
 				{
 					chomp($indiv_ensemble);
+					print $indiv_ensemble."\n";
 					
 					my %params = name2param($indiv_ensemble);
 					$params{ensemble} = $indiv_ensemble;
@@ -127,7 +128,6 @@ for (my $i = 0; $i < @ARGV; $i++)
 					}
 				
 					push (@ensemble_list, \%params);
-					$i++;
 				}
 			}
 			else
