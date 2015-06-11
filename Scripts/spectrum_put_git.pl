@@ -20,7 +20,7 @@ my @data_list = ();
 my $data_directory = "";
 
 # A variable to hold file handles in.
-my $file_handle = "";
+my $file_handle;
 
 # Data list. These all correspond to subfolders of the data directory that I manage.
 
