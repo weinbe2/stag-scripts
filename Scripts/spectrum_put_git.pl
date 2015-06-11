@@ -169,35 +169,34 @@ foreach my $params_ref (@ensemble_list)
 					@tmp_split = split(' ', $last_line); my $last_cfg = $tmp_split[0];
 
 					$num_meas = (@pion_file/$nt);
-				}
-				else
-				{
-					die "No way to count the number of connected measurements exists! Run spectrum_meas_parse.pl for $ensemble.\n";
-				}
-				
-				# Next, get the bin size. 
-				# Make sure a fitparams exists. 
-				if (-f "$path/$ensemble/spectrum2/fitparams/fitparam.ps")
-				{
-					# Load the fitparams file.
-					open($file_handle, "<$path/$ensemble/spectrum2/fitparams/fitparam.ps");
-					my @info_line = <$file_handle>;
-					close($file_handle);
 					
-					# The binsize is the last (5th) entry.
-					my @info_splitter = split(' ', $info_line[0]);
-					$bin_size = $info_splitter[4];
+					# Next, get the bin size. 
+					# Make sure a fitparams exists. 
+					if (-f "$path/$ensemble/spectrum2/fitparams/fitparam.ps")
+					{
+						# Load the fitparams file.
+						open($file_handle, "<$path/$ensemble/spectrum2/fitparams/fitparam.ps");
+						my @info_line = <$file_handle>;
+						close($file_handle);
+						
+						# The binsize is the last (5th) entry.
+						my @info_splitter = split(' ', $info_line[0]);
+						$bin_size = $info_splitter[4];
+						
+						# Excellent! We have all the information, now spit it out to file.
+						open($file_handle, ">$data_directory/meas_conn/meas_conn_$ensemble");
+						print $file_handle "$ensemble $num_meas $bin_size";
+						close($file_handle);
+					}
+					else
+					{
+						print "No way to find the preferred binsize. Run spectrum_fit_inverval.pl for $ensemble and state ps.\n";
+					}
 				}
 				else
 				{
-					die "No way to find the preferred binsize. Run spectrum_fit_inverval.pl for $ensemble and state ps.\n";
+					print "No way to count the number of connected measurements exists! Run spectrum_meas_parse.pl for $ensemble.\n";
 				}
-				
-				# Excellent! We have all the information, now spit it out to file.
-				open($file_handle, ">$data_directory/meas_conn/meas_conn_$ensemble");
-				print $file_handle "$ensemble $num_meas $bin_size";
-				close($file_handle);
-	
 			}
 			case "meas_disc" {
 				# We need the number of measurements and the bin size.
@@ -226,34 +225,35 @@ foreach my $params_ref (@ensemble_list)
 					@tmp_split = split(' ', $last_line); my $last_cfg = $tmp_split[0];
 
 					$num_meas = (@pion_file/$nt);
-				}
-				else
-				{
-					die "No way to count the number of connected measurements exists! Run spectrum_sigma2_parse.pl for $ensemble, and then spectrum_connected_multi.pl -do build.\n";
-				}
-				
-				# Next, get the bin size. 
-				# Make sure a fitparams exists. 
-				if (-f "$path/$ensemble/spectrum2/fitparams/fitparam.dc_stoch")
-				{
-					# Load the fitparams file.
-					open($file_handle, "<$path/$ensemble/spectrum2/fitparams/fitparam.dc_stoch");
-					my @info_line = <$file_handle>;
-					close($file_handle);
 					
-					# The binsize is the last (5th) entry.
-					my @info_splitter = split(' ', $info_line[0]);
-					$bin_size = $info_splitter[4];
+					# Next, get the bin size. 
+					# Make sure a fitparams exists. 
+					if (-f "$path/$ensemble/spectrum2/fitparams/fitparam.dc_stoch")
+					{
+						# Load the fitparams file.
+						open($file_handle, "<$path/$ensemble/spectrum2/fitparams/fitparam.dc_stoch");
+						my @info_line = <$file_handle>;
+						close($file_handle);
+						
+						# The binsize is the last (5th) entry.
+						my @info_splitter = split(' ', $info_line[0]);
+						$bin_size = $info_splitter[4];
+						
+						# Excellent! We have all the information, now spit it out to file.
+						open($file_handle, ">$data_directory/meas_disc/meas_disc_$ensemble");
+						print $file_handle "$ensemble $num_meas $bin_size";
+						close($file_handle);
+					}
+					else
+					{
+						print "No way to find the preferred binsize. Run spectrum_fit_inverval.pl for $ensemble and state dc_stoch.\n";
+					}
 				}
 				else
 				{
-					die "No way to find the preferred binsize. Run spectrum_fit_inverval.pl for $ensemble and state dc_stoch.\n";
+					print "No way to count the number of disconnected measurements exists! Run spectrum_sigma2_parse.pl for $ensemble, and then spectrum_connected_multi.pl -do build.\n";
 				}
 				
-				# Excellent! We have all the information, now spit it out to file.
-				open($file_handle, ">$data_directory/meas_disc/meas_disc_$ensemble");
-				print $file_handle "$ensemble $num_meas $bin_size";
-				close($file_handle);
 			}
 			case "pion" {
 				# This and subsequent entries are based on the following shell script:
