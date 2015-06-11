@@ -96,7 +96,7 @@ for (my $i = 0; $i < @ARGV; $i++)
 				{
 					die "Data $ARGV[$i+1] is not an approved data type.\n";
 				}
-				push (@state_list, $ARGV[$i+1]);
+				push (@data_list, $ARGV[$i+1]);
 				$i++;
 			}
 		}
