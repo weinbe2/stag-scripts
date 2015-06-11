@@ -5,7 +5,10 @@ use POSIX;
 use BSMrun;
 use Switch;
 
-# Copy data into a git folder.
+# Based on a list of states, this updates the basetex.tex file with tmin, tmax, etc.
+# Call style:
+# ./spectrum_meas_texcopy.pl [ensemble] [states...] 
+
 
 if (@ARGV < 2)
 {
