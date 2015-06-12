@@ -178,12 +178,14 @@ foreach my $params_ref (@ensemble_list)
 	# Make sure a directory folder exists! 
 	if (!(-d "$path/$ensemble/spectrum2"))
 	{
-			die "Error: a spectrum directory for $ensemble does not exist. Exiting.\n";
+		print "Error: a spectrum directory for $ensemble does not exist. Skipping to next state.\n";
+		next;
 	}
 
 	if (!(-d "$path/$ensemble/spectrum2/corr"))
 	{
-			die "Error: the raw parsed correlators for $ensemble do not exist. Please parse the data before running! Exiting.\n";
+		print "Error: the raw parsed correlators for $ensemble do not exist. Please parse the data before running! Skipping to next state.\n";
+		next; 
 	}
 	
 	# Loop over all possible data measurements.
