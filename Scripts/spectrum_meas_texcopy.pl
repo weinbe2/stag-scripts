@@ -251,7 +251,7 @@ foreach my $params_ref (@ensemble_list)
 	{
 		# First, make sure a fitparams exists for this state. Otherwise, print
 		# a warning, and skip on to the next state!
-		if (-f "$path/$ensemble"."/spectrum2/fitparams/fitparam.$indiv_state")
+		if (-f "$path/$ensemble"."/spectrum2/fitparams/fitparam.$indiv_state" && -f "$path/$ensemble/spectrum2/corr/corr.$indiv_state")
 		{
 			# Next, check the milc flag.
 			if ($indiv_state eq "rvt" || $indiv_state eq "rpv")
