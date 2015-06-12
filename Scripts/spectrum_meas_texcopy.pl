@@ -307,7 +307,7 @@ foreach my $params_ref (@ensemble_list)
 		}
 		else
 		{
-			print "A fitparams file for state $indiv_state in ensemble $ensemble does not exist. Skipping to the next state.\n";
+			print "A fitparams or corr file for state $indiv_state in ensemble $ensemble does not exist. Skipping to the next state.\n";
 		}
 	}
 	
