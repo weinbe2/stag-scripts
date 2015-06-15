@@ -150,28 +150,13 @@ function visual_fit(blockval, num_elim)
 	log_answer = 0; % plot on a log scale. 
 	fit_form = 1; % One cosh. (2 = Two cosh, 3 = One cosh, one osc, 4 = Baryon, 5 = Cosh + const, 6 = cosh with zero shift).
 
-	% Options: tmin, tmax
-	% Fold? y/n
-	% Positive Parity Project? y/n
-	% Fit to only even time data? y/n
-	% Full or diagonal correlator matrix? 
-
-	fit_minimum = 10;
-	fit_maximum = 24;
-	fit_ppp = 0; % don't positive parity project
-	fit_zero = 0; % don't normalize center to zero or "gap" it.
-	fit_even = 0; % fit all
-	fit_diag = 0; % fit full correlation matrix instead of diagonal.
-	fit_diff = 1; % fit original data, not finite diffs. 
-	fit_x_prec = 1e-20; % set the x precision of the fit.
+	run set_visual_defaults;
 	
-	fit_cut = 0; % pick how many singular values to cut.
-				 % Note that this also modifies the dof.
+	% set values for effective masses.
 	
-	% Modify fit function: 
-	func_fold = 1; % fold 
-	func_zshift = 0; % don't use zero-shifted cosh.
-	func_diff = 1; % use finite difference cosh.
+	eff_K = 2; 
+	eff_N = 5; % minimum 2*n, maximum... Nt.
+	eff_C = 0; % number to cut. Must be less than K.
 	
 	% See if it's a baryon...
 	if (strcmp(spectrum_text, 'nu') || strcmp(spectrum_text, 'de'))
@@ -183,6 +168,15 @@ function visual_fit(blockval, num_elim)
 	% Get correct cosh functions in place.
 	run get_cosh; 
 	
+	% Build plots strings as needed.
+	plot_str{1} = '+r';
+	plot_str{2} = 'og';
+	plot_str{3} = 'xb';
+	plot_str{4} = 'sc';
+	plot_str{5} = 'dm';
+	plot_str{6} = 'pk';
+	
+	% Prepare figures.
 	h = figure();
 	movegui(h, 'northwest');
 	set(h, 'Name', 'Correlator');
@@ -228,11 +222,13 @@ function visual_fit(blockval, num_elim)
 						'Reset Initial Guess', ...
 						'Reset Constraints', ...
 						'Visualize Singular Values', ...
+						'Visualize Effective Masses', ...
+						'Save Effective Masses', ...
                         'Exit'};
 		option_answer = listdlg('PromptString','Choose an option.','SelectionMode', 'single', 'ListString', option_list);
 		
 		if (isempty(option_answer))
-			option_answer = 13;
+			option_answer = 20;
 		end
 		
 		switch option_answer
@@ -444,20 +440,8 @@ function visual_fit(blockval, num_elim)
 				
 				if (strcmp(choice, 'Yes'))
 					
-					fit_minimum = 5;
-					fit_maximum = parse_Nt-fit_minimum;
-					fit_ppp = 0; % don't positive parity project
-					fit_zero = 0; % don't zero the center of the correlator.
-					fit_even = 0; % fit all
-					fit_diag = 0; % fit full correlation matrix instead of diagonal.
-					fit_diff = 0; % fit original data, not finite diffs. 
-					fit_cut = 0; % cut no singular values.
+					run set_visual_defaults;
 					
-					
-					% Modify fit function: 
-					func_fold = 1; %fold
-					func_zshift = 0; % don't use zero-shifted cosh.
-					func_diff = 0; % don't use finite difference cosh.
 				end
 				
 				run get_cosh; 
@@ -1076,8 +1060,240 @@ function visual_fit(blockval, num_elim)
 				clear('ycorr');
 				clear('t1');
 				clear('t2');
+			
+			case 18 % Visualize Effective Masses
+			
+				% Ask what values of K, N, and C to use.
+				% eff_K = 2; 
+				% eff_N = 5; % minimum 2*n, maximum... Nt.
+				% eff_C = 0; % number to cut. Must be less than K.
 				
-			case 18
+				% Ask for values then check sanity.
+				
+				are_valid = 0;
+				while (are_valid == 0)
+					are_valid = 1;
+					new_effmass = inputdlg({'Number of states (1 to 6)', 'Values to use (2*N_states to N_t/2)', 'States to SVD Cut (0 to N_states)'}, ...
+										'Input', 1, {num2str(eff_K), num2str(eff_N), num2str(eff_C)});
+				
+				
+				
+					if (~(size(new_effmass, 1) == 0)) % Make sure we didn't get a cancel!
+						
+						tmpeffK = str2num(new_effmass{1});
+						if (~(size(tmpeffK, 1) == 0))
+							if (tmpeffK > 0 && tmpeffK < 6)
+								eff_K = tmpeffK;
+							else
+								are_valid = 0;
+							end
+						end
+						
+						tmpeffN = str2num(new_effmass{2});
+						if (~(size(tmpeffN, 1) == 0))
+							if (tmpeffN >= (2*eff_K) && tmpeffN <= (parse_Nt/2))
+								eff_N = tmpeffN;
+							else
+								are_valid = 0;
+							end
+						end
+						
+						tmpeffC = str2num(new_effmass{3});
+						if (~(size(tmpeffC, 1) == 0))
+							if (tmpeffC >= 0 && tmpeffC < eff_K)
+								eff_C = tmpeffC;
+							else
+								are_valid = 0;
+							end
+						end
+						
+						if (are_valid == 0)
+							msgbox('Parameter values do not match constraints.', 'Error', 'error');
+						end
+						
+						clear('tmpeffK');
+						clear('tmpeffN');
+						clear('tmpeffC');
+					else
+						are_valid = -1; % exit
+					end
+				end
+				
+				if (are_valid == 1)
+				
+					% Compute masses and get errors under jackknife!
+					[masses, tmproot, tmpamps] = effective_mass_utility(rescale_sum, parse_Nt, eff_K, eff_N, eff_C);
+					
+					% parse_Nt, num_blocks, which mass.
+					% The weird order is because 
+					% errors_jackknife expects (timespan, jack).
+					masses_jack = zeros(size(masses,1), num_blocks, eff_K);
+                    
+                    % Keep things updated!
+                    is_blocking = 1;
+                    
+                    for (b=1:num_blocks)
+						[masses_jack(:,b,:), tmproot, tmpamps] = effective_mass_utility(rescale_jack(:,b), parse_Nt, eff_K, eff_N, eff_C);
+                        
+                        if (mod(b,10) == 0)
+                            run render_update;
+                        end
+                    end
+                    
+                    is_blocking = 0;
+                    
+					% Save some memory...
+					clear('tmproot'); clear('tmpamps');
+					
+					masses_err = zeros(size(masses,1), eff_K);
+					
+					for b=1:eff_K
+						[tmpthing, masses_err(:,b)] = errors_jackknife(masses(:,b), masses_jack(:,:,b));
+					end
+					
+					clear('tmpthing');
+					
+                    % Clean up masses!
+                    bool_flag = ((abs(imag(masses)) > 1e-8) | (real(masses_err) > 1));
+                    masses(bool_flag) = real(masses(bool_flag)) - 1e10;
+                    
+                    % Plot it!                    
+                    h_svd = figure();
+                    %movegui(h, 'northwest');
+                    set(h_svd, 'Name', 'Effective mass visualization');
+                    x_eff = ((eff_N-1)/2):(size(masses,1)-1+(eff_N-1)/2);
+                    errorbar(x_eff-0.2, masses(:,1), masses_err(:,1), plot_str{1}); hold on;
+                    if (eff_K > 1)
+                        for b=2:eff_K
+                            errorbar(x_eff+(0.4/(eff_K-1))*(b-1)-0.2, masses(:,b), masses_err(:,b), plot_str{b}); 
+                        end
+                    end
+                    axis([-inf, inf, 0.000001, 1]);
+                    %h_dvals = semilogy(diagvals, 'or'); hold off;
+                    %legend([h_svals, h_dvals],'Singular Values', 'Diagonal Elements', 'Location', 'southeast');
+                    waitfor(h_svd);
+                    hold off;
+                    
+				end
+							
+			case 19 % Save Effective Masses
+                    % Ask what values of K, N, and C to use.
+				% eff_K = 2; 
+				% eff_N = 5; % minimum 2*n, maximum... Nt.
+				% eff_C = 0; % number to cut. Must be less than K.
+				
+				% Ask for values then check sanity.
+				
+				are_valid = 0;
+				while (are_valid == 0)
+					are_valid = 1;
+					new_effmass = inputdlg({'Number of states (1 to 6)', 'Values to use (2*N_states to N_t/2)', 'States to SVD Cut (0 to N_states)'}, ...
+										'Input', 1, {num2str(eff_K), num2str(eff_N), num2str(eff_C)});
+				
+				
+				
+					if (~(size(new_effmass, 1) == 0)) % Make sure we didn't get a cancel!
+						
+						tmpeffK = str2num(new_effmass{1});
+						if (~(size(tmpeffK, 1) == 0))
+							if (tmpeffK > 0 && tmpeffK < 6)
+								eff_K = tmpeffK;
+							else
+								are_valid = 0;
+							end
+						end
+						
+						tmpeffN = str2num(new_effmass{2});
+						if (~(size(tmpeffN, 1) == 0))
+							if (tmpeffN >= (2*eff_K) && tmpeffN <= (parse_Nt/2))
+								eff_N = tmpeffN;
+							else
+								are_valid = 0;
+							end
+						end
+						
+						tmpeffC = str2num(new_effmass{3});
+						if (~(size(tmpeffC, 1) == 0))
+							if (tmpeffC >= 0 && tmpeffC < eff_K)
+								eff_C = tmpeffC;
+							else
+								are_valid = 0;
+							end
+						end
+						
+						if (are_valid == 0)
+							msgbox('Parameter values do not match constraints.', 'Error', 'error');
+						end
+						
+						clear('tmpeffK');
+						clear('tmpeffN');
+						clear('tmpeffC');
+					else
+						are_valid = -1; % exit
+					end
+				end
+				
+				if (are_valid == 1)
+				
+					% Compute masses and get errors under jackknife!
+					[masses, tmproot, tmpamps] = effective_mass_utility(rescale_sum, parse_Nt, eff_K, eff_N, eff_C);
+					
+					% parse_Nt, num_blocks, which mass.
+					% The weird order is because 
+					% errors_jackknife expects (timespan, jack).
+					masses_jack = zeros(size(masses,1), num_blocks, eff_K);
+                    
+                    % Keep things updated!
+                    is_blocking = 1;
+                    
+                    for (b=1:num_blocks)
+						[masses_jack(:,b,:), tmproot, tmpamps] = effective_mass_utility(rescale_jack(:,b), parse_Nt, eff_K, eff_N, eff_C);
+                        
+                        if (mod(b,10) == 0)
+                            run render_update;
+                        end
+                    end
+                    
+                    is_blocking = 0;
+                    
+					% Save some memory...
+					clear('tmproot'); clear('tmpamps');
+					
+					masses_err = zeros(size(masses,1), eff_K);
+					
+					for b=1:eff_K
+						[tmpthing, masses_err(:,b)] = errors_jackknife(masses(:,b), masses_jack(:,:,b));
+					end
+					
+					clear('tmpthing');
+					
+                    % Clean up masses!
+                    %bool_flag = ((abs(imag(masses)) > 1e-8) | (real(masses_err) > 1));
+                    %masses(bool_flag) = real(masses(bool_flag)) - 1e10;
+                    
+					% Package data up!
+                    x_eff = ((eff_N-1)/2):(size(masses,1)-1+(eff_N-1)/2);
+					
+					% time + (masses+errs for each).
+					save_data = zeros(size(masses, 1), 1+eff_K*2);
+					save_data(:,1) = x_eff(:);
+					for b=1:eff_K
+						save_data(:,2*b) = real(masses(:, b));
+						save_data(:,2*b+1) = real(masses_err(:,b));
+					end
+					
+				
+					% Ask for directory to save the effective masses.
+					[temp_fname, temp_directory] = uiputfile('*.*', 'Save effective masses...', strcat(['../../../' directory_answer{1} '/spectrum2/effmass/']));
+					
+					if (temp_fname ~= 0)
+						save(strcat([temp_directory, temp_fname]), 'save_data', '-ascii', '-double');
+					end
+				
+				end
+				
+                    
+			case 20
 				flag = 0;
 		end
 		
