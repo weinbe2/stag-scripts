@@ -294,7 +294,7 @@ foreach my $file (@allfiles)
 
 	}
 	
-	if (!(exists $pion_lines[0]) || !((exists $ll_lines[0]) || !(exists $cc_lines[0])) # || !(@m_time_lines == 2))
+	if (!(exists $pion_lines[0]) || !(exists $ll_lines[0]) || !(exists $cc_lines[0])) # || !(@m_time_lines == 2))
 	{
 		print "File $orig_n_config doesn't exist.\n";
 		if ($del_flag != 0)
