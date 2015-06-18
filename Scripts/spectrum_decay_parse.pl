@@ -434,11 +434,11 @@ foreach my $file (@allfiles)
 
 
 open(my $tmpfile, ">$path/$direc"."/spectrum2/corr/corr.pll");
-for (my $i = 0; $i < @m_p_ll; $i++)
+for (my $i = 0; $i < @p_ll; $i++)
 {
-	if (exists $m_p_ll[$i])
+	if (exists $p_ll[$i])
 	{
-		foreach my $line (@{$m_p_ll[$i]})
+		foreach my $line (@{$p_ll[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -451,11 +451,11 @@ for (my $i = 0; $i < @m_p_ll; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.plc");
-for (my $i = 0; $i < @m_p_lc; $i++)
+for (my $i = 0; $i < @p_lc; $i++)
 {
-	if (exists $m_p_lc[$i])
+	if (exists $p_lc[$i])
 	{
-		foreach my $line (@{$m_p_lc[$i]})
+		foreach my $line (@{$p_lc[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -464,11 +464,11 @@ for (my $i = 0; $i < @m_p_lc; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.pcc");
-for (my $i = 0; $i < @m_p_cc; $i++)
+for (my $i = 0; $i < @p_cc; $i++)
 {
-	if (exists $m_p_cc[$i])
+	if (exists $p_cc[$i])
 	{
-		foreach my $line (@{$m_p_cc[$i]})
+		foreach my $line (@{$p_cc[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -477,11 +477,11 @@ for (my $i = 0; $i < @m_p_cc; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rll");
-for (my $i = 0; $i < @m_r_ll; $i++)
+for (my $i = 0; $i < @r_ll; $i++)
 {
-	if (exists $m_r_ll[$i])
+	if (exists $r_ll[$i])
 	{
-		foreach my $line (@{$m_r_ll[$i]})
+		foreach my $line (@{$r_ll[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -490,11 +490,11 @@ for (my $i = 0; $i < @m_r_ll; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rllx");
-for (my $i = 0; $i < @m_r_ll_x; $i++)
+for (my $i = 0; $i < @r_ll_x; $i++)
 {
-	if (exists $m_r_ll_x[$i])
+	if (exists $r_ll_x[$i])
 	{
-		foreach my $line (@{$m_r_ll_x[$i]})
+		foreach my $line (@{$r_ll_x[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -503,11 +503,11 @@ for (my $i = 0; $i < @m_r_ll_x; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rlly");
-for (my $i = 0; $i < @m_r_ll_y; $i++)
+for (my $i = 0; $i < @r_ll_y; $i++)
 {
-	if (exists $m_r_ll_y[$i])
+	if (exists $r_ll_y[$i])
 	{
-		foreach my $line (@{$m_r_ll_y[$i]})
+		foreach my $line (@{$r_ll_y[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -516,11 +516,11 @@ for (my $i = 0; $i < @m_r_ll_y; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rllz");
-for (my $i = 0; $i < @m_r_ll_z; $i++)
+for (my $i = 0; $i < @r_ll_z; $i++)
 {
-	if (exists $m_r_ll_z[$i])
+	if (exists $r_ll_z[$i])
 	{
-		foreach my $line (@{$m_r_ll_z[$i]})
+		foreach my $line (@{$r_ll_z[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -529,11 +529,11 @@ for (my $i = 0; $i < @m_r_ll_z; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rcc");
-for (my $i = 0; $i < @m_r_cc; $i++)
+for (my $i = 0; $i < @r_cc; $i++)
 {
-	if (exists $m_r_cc[$i])
+	if (exists $r_cc[$i])
 	{
-		foreach my $line (@{$m_r_cc[$i]})
+		foreach my $line (@{$r_cc[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -542,11 +542,11 @@ for (my $i = 0; $i < @m_r_cc; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rccx");
-for (my $i = 0; $i < @m_r_cc_x; $i++)
+for (my $i = 0; $i < @r_cc_x; $i++)
 {
-	if (exists $m_r_cc_x[$i])
+	if (exists $r_cc_x[$i])
 	{
-		foreach my $line (@{$m_r_cc_x[$i]})
+		foreach my $line (@{$r_cc_x[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -555,11 +555,11 @@ for (my $i = 0; $i < @m_r_cc_x; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rccy");
-for (my $i = 0; $i < @m_r_cc_y; $i++)
+for (my $i = 0; $i < @r_cc_y; $i++)
 {
-	if (exists $m_r_cc_y[$i])
+	if (exists $r_cc_y[$i])
 	{
-		foreach my $line (@{$m_r_cc_y[$i]})
+		foreach my $line (@{$r_cc_y[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -568,11 +568,11 @@ for (my $i = 0; $i < @m_r_cc_y; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.rccz");
-for (my $i = 0; $i < @m_r_cc_z; $i++)
+for (my $i = 0; $i < @r_cc_z; $i++)
 {
-	if (exists $m_r_cc_z[$i])
+	if (exists $r_cc_z[$i])
 	{
-		foreach my $line (@{$m_r_cc_z[$i]})
+		foreach my $line (@{$r_cc_z[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -581,11 +581,11 @@ for (my $i = 0; $i < @m_r_cc_z; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.all");
-for (my $i = 0; $i < @m_a_ll; $i++)
+for (my $i = 0; $i < @a_ll; $i++)
 {
-	if (exists $m_a_ll[$i])
+	if (exists $a_ll[$i])
 	{
-		foreach my $line (@{$m_a_ll[$i]})
+		foreach my $line (@{$a_ll[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -594,11 +594,11 @@ for (my $i = 0; $i < @m_a_ll; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.allx");
-for (my $i = 0; $i < @m_a_ll_x; $i++)
+for (my $i = 0; $i < @a_ll_x; $i++)
 {
-	if (exists $m_a_ll_x[$i])
+	if (exists $a_ll_x[$i])
 	{
-		foreach my $line (@{$m_a_ll_x[$i]})
+		foreach my $line (@{$a_ll_x[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -607,11 +607,11 @@ for (my $i = 0; $i < @m_a_ll_x; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.ally");
-for (my $i = 0; $i < @m_a_ll_y; $i++)
+for (my $i = 0; $i < @a_ll_y; $i++)
 {
-	if (exists $m_a_ll_y[$i])
+	if (exists $a_ll_y[$i])
 	{
-		foreach my $line (@{$m_a_ll_y[$i]})
+		foreach my $line (@{$a_ll_y[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -620,11 +620,11 @@ for (my $i = 0; $i < @m_a_ll_y; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.allz");
-for (my $i = 0; $i < @m_a_ll_z; $i++)
+for (my $i = 0; $i < @a_ll_z; $i++)
 {
-	if (exists $m_a_ll_z[$i])
+	if (exists $a_ll_z[$i])
 	{
-		foreach my $line (@{$m_a_ll_z[$i]})
+		foreach my $line (@{$a_ll_z[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -633,11 +633,11 @@ for (my $i = 0; $i < @m_a_ll_z; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.acc");
-for (my $i = 0; $i < @m_a_cc; $i++)
+for (my $i = 0; $i < @a_cc; $i++)
 {
-	if (exists $m_a_cc[$i])
+	if (exists $a_cc[$i])
 	{
-		foreach my $line (@{$m_a_cc[$i]})
+		foreach my $line (@{$a_cc[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -646,11 +646,11 @@ for (my $i = 0; $i < @m_a_cc; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.accx");
-for (my $i = 0; $i < @m_a_cc_x; $i++)
+for (my $i = 0; $i < @a_cc_x; $i++)
 {
-	if (exists $m_a_cc_x[$i])
+	if (exists $a_cc_x[$i])
 	{
-		foreach my $line (@{$m_a_cc_x[$i]})
+		foreach my $line (@{$a_cc_x[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -659,11 +659,11 @@ for (my $i = 0; $i < @m_a_cc_x; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.accy");
-for (my $i = 0; $i < @m_a_cc_y; $i++)
+for (my $i = 0; $i < @a_cc_y; $i++)
 {
-	if (exists $m_a_cc_y[$i])
+	if (exists $a_cc_y[$i])
 	{
-		foreach my $line (@{$m_a_cc_y[$i]})
+		foreach my $line (@{$a_cc_y[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
@@ -672,11 +672,11 @@ for (my $i = 0; $i < @m_a_cc_y; $i++)
 close($tmpfile);
 
 open($tmpfile, ">$path/$direc"."/spectrum2/corr/corr.accz");
-for (my $i = 0; $i < @m_a_cc_z; $i++)
+for (my $i = 0; $i < @a_cc_z; $i++)
 {
-	if (exists $m_a_cc_z[$i])
+	if (exists $a_cc_z[$i])
 	{
-		foreach my $line (@{$m_a_cc_z[$i]})
+		foreach my $line (@{$a_cc_z[$i]})
 		{
 			print $tmpfile ($i*$sep+$start)." ".$line;
 		}
