@@ -130,7 +130,7 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 				num_data = size(connected, 2);
 				num_beg = floor(num_data*subset_beg)+1;
 				num_end = floor(num_data*subset_end);
-				connected = connected(:,:,num_beg:num_end);
+				connected = connected(:,num_beg:num_end);
 			end
 			
 			% Bin it!
@@ -172,7 +172,7 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 			num_data = size(connected, 2);
 			num_beg = floor(num_data*subset_beg)+1;
 			num_end = floor(num_data*subset_end);
-			connected = connected(:,:,num_beg:num_end);
+			connected = connected(:,num_beg:num_end);
 		end
 		
         % Fold after the fact. 
