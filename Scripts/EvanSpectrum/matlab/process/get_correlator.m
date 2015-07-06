@@ -1,4 +1,4 @@
-function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_blocks, connected_jack_single] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize, num_elim)
+function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_blocks, connected_jack_single] = get_correlator(fname, state, parse_Nt, parse_Ns, fl_flavor, binsize, num_elim, subset_beg, subset_end)
 	% Loads the central value and jackknife blocks in one go, independent of connected or disconnected. 
 	% fname is relative to the current path.
 	% state is 'ps', 'ps2', etc.
@@ -8,6 +8,9 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 	%   single elimination jackknife. 
 	% num_elim is optional. If it's not set, it does a single-elimination.
 	%   Otherwise, it does a 'num_elim' elimination.
+	% subset_beg and subset_end are optional. If not set, we use all of the loaded data.
+	%   Otherwise, the percent of the data between subset_beg (default 0) and subset_end
+	%   (default 1) is kept.
 	% Note: var-covar always comes from single-elimination jack.
 	
 	% The output 'connected_jack_single' is optional.
@@ -23,6 +26,17 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 		want_single = 1;
 	end
 	
+	if (~exist('subset_beg', 'var') && ~exist('subset_end', 'var'))
+        subset_beg = 0;
+        subset_end = 1;
+    end
+    if (subset_beg < 0)
+        subset_beg = 0;
+    end
+    if (subset_end > 1)
+        subset_end = 1;
+    end
+	
 	
 	if (strcmp(state, 'dc_stoch') || strcmp(state, 'sg_stoch'))
         % Get that disconnected state!
@@ -32,6 +46,14 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 		% Load the pbp values. Recall pbp is (parse_Nt, number_bl_in, num_data);
 		[pbp config_nums_pbp] = load_pbppart(fname, parse_Nt, parse_Ns, number_bl);
 		num_data = size(pbp, 3);
+		
+		% Remove part of the data if we need to.
+		if (~(subset_beg == 0 && subset_end == 1))
+			num_data = size(pbp, 3);
+			num_beg = floor(num_data*subset_beg)+1;
+			num_end = floor(num_data*subset_end);
+			pbp = pbp(:,:,num_beg:num_end);
+		end
 		
         % Rescale the ops so we don't need to multiply D by anything later.
 		pbp = pbp.*sqrt(fl_flavor);
@@ -103,6 +125,14 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 			connected = load_correlator(fname, 'sc_stoch', parse_Nt);
 			%connected = fold_data(connected, is_baryon);
 			
+			% Remove part of the data if we need to.
+			if (~(subset_beg == 0 && subset_end == 1))
+				num_data = size(connected, 2);
+				num_beg = floor(num_data*subset_beg)+1;
+				num_end = floor(num_data*subset_end);
+				connected = connected(:,:,num_beg:num_end);
+			end
+			
 			% Bin it!
 			connected_blocks = block_data(connected, 2, binsize);
 			
@@ -137,6 +167,14 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
         % Load the correlator, run autocorrelation, block it.
         connected = load_correlator(fname, state, parse_Nt);
 
+		% Remove part of the data if we need to.
+		if (~(subset_beg == 0 && subset_end == 1))
+			num_data = size(connected, 2);
+			num_beg = floor(num_data*subset_beg)+1;
+			num_end = floor(num_data*subset_end);
+			connected = connected(:,:,num_beg:num_end);
+		end
+		
         % Fold after the fact. 
 		%{
         if (strcmp(state, 'sc_stoch'))
