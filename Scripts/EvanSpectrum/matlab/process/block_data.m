@@ -35,12 +35,22 @@ function [blocks, num_blocks] = block_data(in_data, dim, blocksize)
 	last_set = in_data_perm((num_data-blocksize-end_overflow+1):num_data,:);
 	the_blocks(num_blocks,:) = mean(last_set, 1);
 	
+	% Trim start and end.
+	%in_data_perm_orig = in_data_perm;
+	in_data_perm((num_data-blocksize-end_overflow+1):num_data,:) = [];
+	in_data_perm(1:(blocksize+front_overflow),:) = [];
+	
+	% Average over all other bins.
+	the_blocks(2:(num_blocks-1),:) = reshape(mean(reshape(in_data_perm, [blocksize (num_blocks-2) other_data_size]), 1), [(num_blocks-2) other_data_size]);
+	
+	%meh = the_blocks;
+	
 	% And the rest!
-	for b=2:(num_blocks-1)
-		a_range = ((b-1)*blocksize+1+front_overflow):(b*blocksize+front_overflow);
-		middle_set = in_data_perm(a_range,:);
-		the_blocks(b,:) = mean(middle_set,1);
-	end
+	%for b=2:(num_blocks-1)
+	%	a_range = ((b-1)*blocksize+1+front_overflow):(b*blocksize+front_overflow);
+	%	middle_set = in_data_perm_orig(a_range,:);
+	%	the_blocks(b,:) = mean(middle_set,1);
+	%end
 	
 	% And we've blocked! Rearrange the data.
 	unfolded_blocks = reshape(the_blocks, [num_blocks other_sizes]);

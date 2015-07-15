@@ -42,13 +42,31 @@ function [out_jack] = jackknife_bins(in_data, dim, num_elim)
 	file_conn_copy = in_data_perm;
 	file_conn_copy((num_data-num_elim-end_overflow+1):num_data,:) = [];
 	the_blocks(num_blocks,:) = mean(file_conn_copy,1);
-	
+    
+    % Get sum of first and last blocks, as well as all.
+    %in_data_perm_orig = in_data_perm;
+    in_data_perm = reshape(in_data_perm, [num_blocks other_data_size]);
+    sum_all = sum(in_data_perm,1);
+    %sum_first = sum(in_data_perm(1:(num_elim+front_overflow),:),1);
+    %sum_last = sum(in_data_perm((num_data-num_elim-end_overflow+1):num_data,:),1);
+    
+    % Trim start and end.
+	in_data_perm((num_data-num_elim-end_overflow+1):num_data,:) = [];
+	in_data_perm(1:(num_elim+front_overflow),:) = [];
+    
+    % Get sum of all other bins.
+	sum_other_bins = reshape(sum(reshape(in_data_perm, [num_elim (num_blocks-2) other_data_size]),1), [(num_blocks-2) other_data_size]);
+    block_vals_tmp = (repmat(sum_all, [(num_blocks-2) 1]) - sum_other_bins)/(num_data-num_elim);
+    the_blocks(2:(num_blocks-1),:) = block_vals_tmp;
+    
+    %meh = the_blocks;
+    
 	% And the rest!
-	for b=2:(num_blocks-1)
-		file_conn_copy = in_data_perm;
-		file_conn_copy(((b-1)*num_elim+front_overflow+1):(b*num_elim+front_overflow),:) = [];
-		the_blocks(b,:) = mean(file_conn_copy,1);
-	end
+	%for b=2:(num_blocks-1)
+	%	file_conn_copy = in_data_perm_orig;
+	%	file_conn_copy(((b-1)*num_elim+front_overflow+1):(b*num_elim+front_overflow),:) = [];
+	%	the_blocks(b,:) = mean(file_conn_copy,1);
+	%end
 	
 	% And we've jackknifed! Rearrange the data.
 	unfolded_blocks = reshape(the_blocks, [num_blocks other_sizes]);
