@@ -91,13 +91,18 @@ function visual_fit(blockval, num_elim)
 	%blocksize = 10;
 	volume = parse_Ns^3; %*48;
 	fl_flavor = fl_l/4;
-	
+    
+    % set what % of the data we look at.
+    loc_begin = 0.0;
+    loc_end = 1.0;
+    
 	% Import data.
     
     [scalar_sum, scalar_jack, scalar_cov_mat, ...
 		scalar_err, num_blocks, scalar_jack_single] = ...
 		get_correlator(strcat(['../../../' directory_answer{1}]), ...
-		spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
+		spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim, ...
+        loc_begin, loc_end);
 	
 	% Get rolling!
 
@@ -149,6 +154,8 @@ function visual_fit(blockval, num_elim)
 	vev_answer = 0; % subtract off this vev
 	log_answer = 0; % plot on a log scale. 
 	fit_form = 1; % One cosh. (2 = Two cosh, 3 = One cosh, one osc, 4 = Baryon, 5 = Cosh + const, 6 = cosh with zero shift).
+    
+
 
 	run set_visual_defaults;
 	
@@ -189,7 +196,7 @@ function visual_fit(blockval, num_elim)
 	movegui(h2, 'northeast');
 	set (h2, 'Name', 'Info');
 	ph = uipanel(h2, 'Units', 'normalized', 'position', [0.05 0.05 0.9 0.9], 'title', 'Display Window');
-	th = uicontrol(ph, 'style','text','Units','normalized','position',[0 0 1 1],'FontSize', 9, 'string', {'Rescale mass: 0.0', 'Fit Form: One cosh', 'Amplitude 1: 0.0', 'Mass 1: 0.0', 'Amplitude 2: 0.0', 'Mass 2: 0.0', 'Chisq per DoF: 0.0'}, 'horizontalalignment', 'left', 'FontName', 'FixedWidth');
+	th = uicontrol(ph, 'style','text','Units','normalized','position',[0 0 1 1],'FontSize', 8, 'string', {'Rescale mass: 0.0', 'Fit Form: One cosh', 'Amplitude 1: 0.0', 'Mass 1: 0.0', 'Amplitude 2: 0.0', 'Mass 2: 0.0', 'Chisq per DoF: 0.0'}, 'horizontalalignment', 'left', 'FontName', 'FixedWidth');
 
 	% Get the correct cosh functions in place.
 	run get_cosh; 
@@ -209,7 +216,7 @@ function visual_fit(blockval, num_elim)
 						'Set Fit Form', ...
 						'Set Fit Options', ...
 						'Set Data Modifications', ...
-						'Set Binning (Reload)', ...
+						'Set Bins, Subsets (Reload)', ...
 						'Set Initial Guess', ...
 						'Set Constraints', ...
 						'Perform Fit', ...
@@ -453,8 +460,8 @@ function visual_fit(blockval, num_elim)
 				
 				% Options: bin size, jackknife.
 			
-				new_fit_min = inputdlg({'Bin size:', 'Jackknife elim:'}, ...
-										'Input', 1, {num2str(blocksize), num2str(num_elim)});
+				new_fit_min = inputdlg({'Bin size:', 'Jackknife elim:', 'Begin fraction:', 'End fraction:'}, ...
+										'Input', 1, {num2str(blocksize), num2str(num_elim), num2str(loc_begin), num2str(loc_end)});
 				
 				
 				
@@ -472,13 +479,28 @@ function visual_fit(blockval, num_elim)
 						if (tmpnumelim > 0)
 							num_elim = tmpnumelim;
 						end
-					end
-					
+                    end
+                    
+                    tmplocbegin = str2num(new_fit_min{3});
+					if (~(size(tmplocbegin, 1) == 0))
+						if (tmplocbegin >= 0 && tmplocbegin <= 1)
+							loc_begin = tmplocbegin;
+						end
+                    end
+
+                    tmplocend = str2num(new_fit_min{4});
+					if (~(size(tmplocend, 1) == 0))
+						if (tmplocend >= 0 && tmplocend <= 1 && tmplocend > loc_begin)
+							loc_end = tmplocend;
+						end
+                    end
+                    
 					% Import data.
 					[scalar_sum, scalar_jack, scalar_cov_mat, ...
 						scalar_err, num_blocks, scalar_jack_single] = ...
 						get_correlator(strcat(['../../../' directory_answer{1}]), ...
-						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
+						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim, ...
+                        loc_begin, loc_end);
 					
 					saving = 0;
 					results_save = zeros(1, 40);
@@ -488,6 +510,8 @@ function visual_fit(blockval, num_elim)
 				
 				clear('tmpbinsize');
 				clear('tmpnumelim');
+                clear('tmplocbegin');
+                clear('tmplocend');
 				
 				% Fix the cosh.
 				run get_cosh;
@@ -920,7 +944,8 @@ function visual_fit(blockval, num_elim)
 					[scalar_sum, scalar_jack, scalar_cov_mat, ...
 						scalar_err, num_blocks, scalar_jack_single] = ...
 						get_correlator(strcat(['../../../' directory_answer{1}]), ...
-						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
+						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim, ...
+                        loc_begin, loc_end);
 						
 					% See if it's a baryon...
 					if (strcmp(spectrum_text, 'nu') || strcmp(spectrum_text, 'de'))
@@ -981,7 +1006,8 @@ function visual_fit(blockval, num_elim)
 					[scalar_sum, scalar_jack, scalar_cov_mat, ...
 						scalar_err, num_blocks, scalar_jack_single] = ...
 						get_correlator(strcat(['../../../' directory_answer{1}]), ...
-						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
+						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim, ...
+                        loc_begin, loc_end);
 		
 					saving = 0;
 					results_save = zeros(1, 40);
