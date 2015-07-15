@@ -209,6 +209,7 @@ function visual_fit(blockval, num_elim)
 						'Set Fit Form', ...
 						'Set Fit Options', ...
 						'Set Data Modifications', ...
+						'Set Binning (Reload)', ...
 						'Set Initial Guess', ...
 						'Set Constraints', ...
 						'Perform Fit', ...
@@ -228,7 +229,7 @@ function visual_fit(blockval, num_elim)
 		option_answer = listdlg('PromptString','Choose an option.','SelectionMode', 'single', 'ListString', option_list);
 		
 		if (isempty(option_answer))
-			option_answer = 20;
+			option_answer = 21;
 		end
 		
 		switch option_answer
@@ -432,7 +433,7 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 14 % Reset Fit Options
+			case 15 % Reset Fit Options
 				
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit options?', 'Check!', ...
@@ -447,8 +448,54 @@ function visual_fit(blockval, num_elim)
 				run get_cosh; 
 				
 				run render_update;
+			
+			case 5 % Set binning/jackknife. (requires reload).
 				
-			case 5 % Set Initial Params
+				% Options: bin size, jackknife.
+			
+				new_fit_min = inputdlg({'Bin size:', 'Jackknife elim:'}, ...
+										'Input', 1, {num2str(blocksize), num2str(num_elim)});
+				
+				
+				
+				if (~(size(new_fit_min, 1) == 0)) % Make sure we didn't get a cancel!
+					
+					tmpbinsize = str2num(new_fit_min{1});
+					if (~(size(tmpbinsize, 1) == 0))
+						if (tmpbinsize > 0)
+							blocksize = tmpbinsize;
+						end
+					end
+					
+					tmpnumelim = str2num(new_fit_min{2});
+					if (~(size(tmpnumelim, 1) == 0))
+						if (tmpnumelim > 0)
+							num_elim = tmpnumelim;
+						end
+					end
+					
+					% Import data.
+					[scalar_sum, scalar_jack, scalar_cov_mat, ...
+						scalar_err, num_blocks, scalar_jack_single] = ...
+						get_correlator(strcat(['../../../' directory_answer{1}]), ...
+						spectrum_text, parse_Nt, parse_Ns, fl_flavor, blocksize, num_elim);
+					
+					saving = 0;
+					results_save = zeros(1, 40);
+					
+				end
+				
+				
+				clear('tmpbinsize');
+				clear('tmpnumelim');
+				
+				% Fix the cosh.
+				run get_cosh;
+				
+				run render_update;
+			
+			
+			case 6 % Set Initial Params
 				new_guess_answers = inputdlg({'Cosh: Amplitude 1:', 'Cosh: Mass 1:', 'Cosh: Amplitude 2:', 'Cosh: Mass 2:', 'Cosh: Amplitude 3:', 'Cosh: Mass 3:',...
                     'Osc: Amplitude 4:', 'Osc: Mass 4:', 'Osc: Amplitude 5:', 'Osc: Mass 5:', 'Osc: Amplitude 6:', 'Osc: Mass 6:'}, ...
                     'Input', 1, {num2str(coefficients(1)), num2str(coefficients(2)), num2str(coefficients(3)), num2str(coefficients(4)), ...
@@ -535,7 +582,7 @@ function visual_fit(blockval, num_elim)
 				
 				clear('new_guess_answers'); 
 			
-			case 6 % Set Constraints
+			case 7 % Set Constraints
 			
 				% Note! If the constraint is >1e-22, <1e-18,
 				% it is set as an exact equality (basically...) 
@@ -628,7 +675,7 @@ function visual_fit(blockval, num_elim)
 				clear('new_guess_answers'); 
 			
 				
-			case 15 % Reset Params
+			case 16 % Reset Params
 			
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit params?', 'Check!', ...
@@ -642,13 +689,13 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 16 % Reset Constraints
+			case 17 % Reset Constraints
                 constraints = zeros(12,1);
                 chisq_dof = 0.0; p_val = 0.0; cond_num = 0;
 				
 				run render_update;
 				
-			case 7 % Perform Fit
+			case 8 % Perform Fit
 			
 				run prepare_data;
 			
@@ -695,7 +742,7 @@ function visual_fit(blockval, num_elim)
 					run render_update
 				end
 				
-			case 8 % Perform Jackknife, finally.
+			case 9 % Perform Jackknife, finally.
 			
 				run prepare_data;
 			
@@ -773,7 +820,7 @@ function visual_fit(blockval, num_elim)
 				clear('rescale_sum'); clear('rescale_err'); clear('rescale_cov_mat');
 				
 			
-			case 12 % Change Directory
+			case 13 % Change Directory
 				directory_tmp = inputdlg('Enter an input directory.', 'Input', 1, directory_answer);
 				
                 
@@ -891,7 +938,7 @@ function visual_fit(blockval, num_elim)
 					
 				end
 			
-			case 13 % Change State
+			case 14 % Change State
 				%spectrum_list = {'ps', 'sc', 'i5', 'ij', 'r0', 'ris', 'rij', 'ri5', 'ps2', 'nu', 'de'};
 				
 				spectrum_guess = listdlg('PromptString','Enter a spectrum to look at.','SelectionMode', 'single', 'ListString', spectrum_list, 'InitialValue', spectrum_answer);
@@ -954,13 +1001,13 @@ function visual_fit(blockval, num_elim)
 				
 				clear('spectrum_guess');
 				
-			case 10 % Begin saving.
+			case 11 % Begin saving.
 				if (saving == 0)
 					saving = 1;
 					results_save = zeros(1,40);
 					run render_update;
 				end
-			case 11 % End saving.
+			case 12 % End saving.
 				if (saving == 1)
 					saving = 0;
 					
@@ -974,7 +1021,7 @@ function visual_fit(blockval, num_elim)
 					
 					run render_update;
 				end
-			case 9 % Save modified correlator 
+			case 10 % Save modified correlator 
 			
 				% get the data in shape!
 				run render_update;
@@ -1002,7 +1049,7 @@ function visual_fit(blockval, num_elim)
 					save(strcat([temp_directory, temp_fname]), 'rescale_cov_mat', '-ascii', '-double');
 				end
 				
-			case 17 % visualize singular values.
+			case 18 % visualize singular values.
 				% Get the appropriate covariance matrix.
 				
 				t1 = fit_minimum;
@@ -1061,7 +1108,7 @@ function visual_fit(blockval, num_elim)
 				clear('t1');
 				clear('t2');
 			
-			case 18 % Visualize Effective Masses
+			case 19 % Visualize Effective Masses
 			
 				% Ask what values of K, N, and C to use.
 				% eff_K = 2; 
@@ -1176,7 +1223,7 @@ function visual_fit(blockval, num_elim)
                     
 				end
 							
-			case 19 % Save Effective Masses
+			case 20 % Save Effective Masses
                     % Ask what values of K, N, and C to use.
 				% eff_K = 2; 
 				% eff_N = 5; % minimum 2*n, maximum... Nt.
@@ -1293,7 +1340,7 @@ function visual_fit(blockval, num_elim)
 				end
 				
                     
-			case 20
+			case 21
 				flag = 0;
 		end
 		
