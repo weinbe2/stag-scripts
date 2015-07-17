@@ -49,6 +49,17 @@ function visual_fit(blockval, num_elim)
         spectrum_list{size(spectrum_list,2)+1} = 'dc_stoch';
         spectrum_list{size(spectrum_list,2)+1} = 'sg_stoch';
     end
+	
+	% New and preliminary: see if wall measurement files exist.
+	if (exist(strcat(['..\..\..\' directory_answer{1} '\spectrum2\wall\PBPPART_WALL.dat']), 'file') ...
+			&& exist(strcat(['..\..\..\' directory_answer{1} '\spectrum2\wall\SPECTRUM_WALL.dat']), 'file') ...
+			&& exist(strcat(['..\..\..\' directory_answer{1} '\spectrum2\wall\SPECTRUM_WALL_PION.dat']), 'file'))
+		% We can build ps_ww, sc_ww, dc_ww, sg_ww, dc_pw.
+		spectrum_list{size(spectrum_list,2)+1} = 'ps_ww';
+        spectrum_list{size(spectrum_list,2)+1} = 'sc_ww';
+		spectrum_list{size(spectrum_list,2)+1} = 'dc_ww';
+        spectrum_list{size(spectrum_list,2)+1} = 'sg_ww';
+	end
 
 	clear('files_in_dir'); clear('tmppath'); clear('tmpname'); clear('tmpext');
 

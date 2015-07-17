@@ -162,6 +162,108 @@ function [connected_sum, connected_jack, connected_cov_mat, connected_err, num_b
 			connected_jack_single = disc_jack_sing;
 		end
 		
+	elseif (strcmp(state, 'ps_ww') || strcmp(state, 'sc_ww') || ...
+			strcmp(state, 'dc_ww') || strcmp(state, 'sg_ww'))
+		% Use the preliminary wall-wall measurements. These will
+		% probably get phased out at some point, but may as well
+		% try it.
+		
+		% Load the datafiles.
+		[pbp_w, conn_ww, pion_ww] = load_wall(fname, parse_Nt, parse_Ns);
+		num_data = size(pbp_w, 3);
+		pbp_w = pbp_w.*sqrt(fl_flavor);
+		
+		% Remove part of the data if we need to.
+		if (~(subset_beg == 0 && subset_end == 1))
+			num_data = size(pbp_w, 3);
+			num_beg = floor(num_data*subset_beg)+1;
+			num_end = floor(num_data*subset_end);
+			pbp_w = pbp_w(:,:,num_beg:num_end);
+			conn_ww = conn_ww(:,num_beg:num_end);
+			pion_ww = pion_ww(:, num_beg:num_end);
+		end
+		
+		% Build the disconnected correlator.
+		disc_ww = build_vev_correlator(pbp_w, 1); % fold it.
+		
+		% Now bin it!
+		[pbp_w_blocks num_blocks] = block_data(pbp_w, 3, binsize);
+		[disc_ww_blocks num_blocks] = block_data(disc_ww, 4, binsize);
+		[conn_ww_blocks num_blocks] = block_data(conn_ww, 2, binsize);
+		[pion_ww_blocks num_blocks] = block_data(pion_ww, 2, binsize);
+		
+		% Get central values.
+		pbp_w_sum = mean(pbp_w_blocks, 3);
+		disc_ww_sum = mean(disc_ww_blocks, 4);
+		conn_ww_sum = mean(conn_ww_blocks, 2);
+		pion_ww_sum = mean(pion_ww_blocks, 2);
+		
+		
+		% Multi- elim jackknife.
+		pbp_w_jack = jackknife_bins(pbp_w_blocks, 3, num_elim);
+		disc_ww_jack = jackknife_bins(disc_ww_blocks, 4, num_elim);
+		conn_ww_jack = jackknife_bins(conn_ww_blocks, 2, num_elim);
+		pion_ww_jack = jackknife_bins(pion_ww_blocks, 2, num_elim);
+		num_blocks = size(pbp_w_jack, 3);
+		
+		% Build the disconnected correlators.
+		vev_center = mean(pbp_w_sum, 1);
+		vev_sub = repmat(reshape(parse_Nt.*((vev_center')*vev_center),1,1,1), [parse_Nt, 1, 1]);
+		disc_ww_sum = disc_ww_sum - vev_sub;
+		
+		% Next on the jackknife!
+		vev_center = mean(pbp_w_jack, 1);
+		vev_1 = repmat(reshape(vev_center,1, 1, 1, num_blocks), [parse_Nt, 1, 1, 1]);
+		vev_2 = repmat(reshape(vev_center,1, 1, 1, num_blocks), [parse_Nt, 1, 1, 1]);
+		disc_ww_jack = disc_ww_jack - vev_1.*vev_2.*parse_Nt;
+		disc_ww_jack = reshape(disc_ww_jack, [parse_Nt, num_blocks]);
+		
+		% Grab the single elim if wanted.
+		if (want_single == 1)
+						
+			pbp_w_jack_sing = jackknife_bins(pbp_w_blocks, 3, 1);
+			disc_ww_jack_sing = jackknife_bins(disc_ww_blocks, 4, 1);
+			conn_ww_jack_sing = jackknife_bins(conn_ww_blocks, 2, 1);
+			pion_ww_jack_sing = jackknife_bins(pion_ww_blocks, 2, 1);
+			num_blocks_sing = size(pbp_w_jack_sing, 3);
+			
+			% Next on the jackknife!
+			vev_center = mean(pbp_w_jack_sing, 1);
+			vev_1 = repmat(reshape(vev_center,1, 1, 1, num_blocks), [parse_Nt, 1, 1, 1]);
+			vev_2 = repmat(reshape(vev_center,1, 1, 1, num_blocks), [parse_Nt, 1, 1, 1]);
+			disc_ww_jack_sing = disc_ww_jack_sing - vev_1.*vev_2.*parse_Nt;
+			disc_ww_jack_sing = reshape(disc_ww_jack_sing, [parse_Nt, num_blocks_sing]);
+		end
+		
+		% We have all the pieces! Return the right thing depending on what we need.
+		
+		
+		if (strcmp(state, 'ps_ww'))
+			connected_sum = pion_ww_sum;
+			connected_jack = pion_ww_jack;
+			if (want_single == 1)
+				connected_jack_single = pion_ww_jack_sing;
+			end
+		elseif (strcmp(state, 'sc_ww'))
+			connected_sum = -conn_ww_sum;
+			connected_jack = -conn_ww_jack;
+			if (want_single == 1)
+				connected_jack_single = -conn_ww_jack_sing;
+			end
+		elseif (strcmp(state, 'dc_ww'))
+			connected_sum = disc_ww_sum;
+			connected_jack = disc_ww_jack;
+			if (want_single == 1)
+				connected_jack_single = disc_ww_jack_sing;
+			end
+		elseif (strcmp(state, 'sg_ww'))
+			connected_sum = disc_ww_sum - conn_ww_sum;
+			connected_jack = disc_ww_jack - conn_ww_jack;
+			if (want_single == 1)
+				connected_jack_single = disc_ww_jack_sing - conn_ww_jack_sing;
+			end
+		end
+		
     else
 
         % Load the correlator, run autocorrelation, block it.
