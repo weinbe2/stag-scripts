@@ -128,9 +128,13 @@ function visual_fit(blockval, num_elim)
 	% Errors and things!
 	errors = zeros(12, 1);
 	
+	% Hold auxillary results.
+	auxresult = zeros(2, 1);
+	auxerrors = zeros(2, 1);
+	
 	% Hold onto saved results.
 	saving = 0; 
-	results_save = zeros(1, 40);
+	results_save = zeros(1, 44);
     
     % Are we blocking?
     is_blocking = 0;
@@ -188,6 +192,13 @@ function visual_fit(blockval, num_elim)
 		is_sinh = 1;
 	else
 		is_sinh = 0;
+	end
+	
+	% See if we want f_pi.
+	if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll'))
+		is_fpi = 1;
+	else
+		is_fpi = 0;
 	end
 	
 	% Get correct cosh functions in place.
@@ -726,6 +737,9 @@ function visual_fit(blockval, num_elim)
 				if (strcmp(choice, 'Yes'))
 					coefficients = zeros(12,1);
 					errors = zeros(12, 1);
+					% Hold auxillary results.
+					auxresult = zeros(2, 1);
+					auxerrors = zeros(2, 1);
 					chisq_dof = 0.0; p_val = 0.0; cond_num = 0;
 				end
 				
@@ -755,6 +769,17 @@ function visual_fit(blockval, num_elim)
 					p_val = the_fit_output(1, 16);
 					cond_num = the_fit_output(1, 17);
 					
+					% Check auxillary results, such as F_pi.
+					if (is_fpi == 1)
+						auxresult = zeros(1, 2);
+						auxerrors = zeros(1, 2);
+						if (strcmp(spectrum_text, 'ps2'))
+							auxresult(1,1) = 2*m_l*sqrt(coefficients(1)*cosh(parse_Nt*coefficients(2)/2)*((parse_Ns)^3)*3/(4*(coefficients(2)^3))); % f_pi
+						elseif (strcmp(spectrum_text, 'pll'))
+							auxresult(1,1) = 2*m_l*sqrt(coefficients(1)*cosh(parse_Nt*coefficients(2)/2)*((parse_Ns)^3)/(4*(coefficients(2)^3))); % f_pi
+						end
+					end
+					
 					% Push it to the save stack, overwriting if it's the same t-min.
 					if (saving == 1)
 						if (results_save(end, 1) == fit_minimum)
@@ -766,6 +791,7 @@ function visual_fit(blockval, num_elim)
 							results_save(end, 27) = chisq_dof;
 							results_save(end, 28) = p_val;
 							results_save(end, 29:40) = constraints(:);
+							results_save(end, 41:2:43) = auxresult(:);
 						else
 							% Add to the end.
 							results_save(end+1, 1) = fit_minimum;
@@ -775,6 +801,7 @@ function visual_fit(blockval, num_elim)
 							results_save(end, 27) = chisq_dof;
 							results_save(end, 28) = p_val;
 							results_save(end, 29:40) = constraints(:);
+							results_save(end, 41:2:43) = auxresult(:);
 						end
 					end
 					
@@ -802,6 +829,8 @@ function visual_fit(blockval, num_elim)
 					
 					% Into the rabbit hole...
 					coefficients_blocks = zeros(num_blocks, 12);
+					auxresult_blocks = zeros(num_blocks, 2);
+					
 					jack_flag = 1; is_blocking = 1;
 					for b=1:num_blocks
                         if (jack_flag == 1)
@@ -813,6 +842,15 @@ function visual_fit(blockval, num_elim)
                             end
 						
                         	coefficients_blocks(b, :) = block_fit_output(3:14);
+							
+							% Check auxillary results, such as F_pi.
+							if (is_fpi == 1)
+								if (strcmp(spectrum_text, 'ps2'))
+									auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)*3/(4*(coefficients_blocks(b,2)^3))); % f_pi
+								elseif (strcmp(spectrum_text, 'pll'))
+									auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)/(4*(coefficients_blocks(b,2)^3))); % f_pi
+								end
+							end
                             
                             if (mod(b,10) == 0)
                                 run render_update;
@@ -822,8 +860,13 @@ function visual_fit(blockval, num_elim)
 					if jack_flag == 1 % it worked!
 						coefficients_rep = repmat(coefficients', [num_blocks 1]);
 						errors = sqrt(sum((coefficients_blocks - coefficients_rep).^2,1).*(num_blocks-1)./num_blocks);
+						
+						auxresult_rep = repmat(auxresult, [num_blocks 1]);
+						auxerrors = sqrt(sum((auxresult_blocks - auxresult_rep).^2,1).*(num_blocks-1)./num_blocks);
+						
 					else % it failed
 						errors = zeros(1,12);
+						auxerrors = zeros(1,2);
                     end
                     
                     is_blocking  = 0;
@@ -839,6 +882,8 @@ function visual_fit(blockval, num_elim)
 							results_save(end, 27) = chisq_dof;
 							results_save(end, 28) = p_val;
 							results_save(end, 29:40) = constraints(:);
+							results_save(end, 41:2:43) = auxresult(:);
+							results_save(end, 42:2:44) = auxerrors(:);
 						else
 							% Add to the end.
 							results_save(end+1, 1) = fit_minimum;
@@ -848,6 +893,8 @@ function visual_fit(blockval, num_elim)
 							results_save(end, 27) = chisq_dof;
 							results_save(end, 28) = p_val;
 							results_save(end, 29:40) = constraints(:);
+							results_save(end, 41:2:43) = auxresult(:);
+							results_save(end, 42:2:44) = auxerrors(:);
 						end
 					end
 					
@@ -978,6 +1025,13 @@ function visual_fit(blockval, num_elim)
 					else
 						is_sinh = 0;
 					end
+					
+					% See if we want f_pi.
+					if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll'))
+						is_fpi = 1;
+					else
+						is_fpi = 0;
+					end
 
 					
 					run get_cosh; 
@@ -1051,6 +1105,13 @@ function visual_fit(blockval, num_elim)
 					else
 						is_sinh = 0;
 					end
+					
+					% See if we want f_pi.
+					if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll'))
+						is_fpi = 1;
+					else
+						is_fpi = 0;
+					end
 
 					
 					run get_cosh; 
@@ -1064,7 +1125,7 @@ function visual_fit(blockval, num_elim)
 			case 11 % Begin saving.
 				if (saving == 0)
 					saving = 1;
-					results_save = zeros(1,40);
+					results_save = zeros(1,44);
 					run render_update;
 				end
 			case 12 % End saving.
@@ -1076,7 +1137,7 @@ function visual_fit(blockval, num_elim)
 					
 					if (temp_fname ~= 0)
                         save(strcat([temp_directory, temp_fname]), 'results_save', '-ascii', '-double');
-						results_save = zeros(1,40);
+						results_save = zeros(1,44);
                     end
 					
 					run render_update;
