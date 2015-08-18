@@ -1205,6 +1205,8 @@ function visual_fit(blockval, num_elim)
 				
 				if (are_valid == 1)
 				
+					run prepare_data;
+				
 					% Compute masses and get errors under jackknife!
 					[masses, tmproot, tmpamps] = effective_mass_utility(rescale_sum, parse_Nt, eff_K, eff_N, eff_C);
 					
@@ -1318,6 +1320,8 @@ function visual_fit(blockval, num_elim)
 				end
 				
 				if (are_valid == 1)
+				
+					run prepare_data;
 				
 					% Compute masses and get errors under jackknife!
 					[masses, tmproot, tmpamps] = effective_mass_utility(rescale_sum, parse_Nt, eff_K, eff_N, eff_C);

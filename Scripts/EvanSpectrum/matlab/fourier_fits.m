@@ -71,11 +71,13 @@ function outform = fourier_fits_new(fname, state, num_roots, noerrors, blockval,
 	clear('connected_err');
 	
 	% Fix sign of sc_stoch.
-	if (strcmp(state, 'sc_stoch'))
+	%{
+    if (strcmp(state, 'sc_stoch'))
 		connected_sum = -1*connected_sum;
 		connected_jack = -1*connected_jack;
 	end
-	
+	%}
+    
 	% Fourier transform, take the real part to fold it, do the analysis.
 	% /sqrt(parse_Nt) is Claudio's convention.
 	connected_P_sum = real(fft(connected_sum, [], 1))/sqrt(parse_Nt);
@@ -300,6 +302,12 @@ function outform = fourier_fits_new(fname, state, num_roots, noerrors, blockval,
     chisq
     
     pval = 1.0-chi2cdf(chisq*(size(yval,2)-2*num_roots), size(yval,2)-2*num_roots)
+    
+    data = zeros(3, numel(xval));
+    data(1,:) = xval;
+    data(2,:) = yval;
+    data(3,:) = sqrt(diag(ycorr));
+    data'
     
     %return
     

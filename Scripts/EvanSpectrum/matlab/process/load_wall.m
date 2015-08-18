@@ -33,6 +33,9 @@ function [pbp_w, conn_ww, pion_ww] = load_wall(fname, parse_Nt, parse_Ns)
 
 	conn_ww = -reshape(conn_values(:, 3), [parse_Nt num_data]);
 	
+	% Due to a bug in the output.
+	conn_ww = circshift(conn_ww, [1 0]);
+	
 	% SPECTRUM_WALL_PION.dat: connected piece of wall-wall.
 	full_fname = strcat(fname, '/spectrum2/wall/SPECTRUM_WALL_PION.dat');
 	fd = fopen(full_fname,'rt');
@@ -47,7 +50,9 @@ function [pbp_w, conn_ww, pion_ww] = load_wall(fname, parse_Nt, parse_Ns)
 	num_data = size(conn_values,1)/parse_Nt;
 
 	pion_ww = reshape(conn_values(:,3), [parse_Nt num_data]);
-    
+	
+    pion_ww = circshift(pion_ww, [1 0]);
+	
     num_data_in = num_data; 
     
 	% Do some rescaling by 3-volume.
