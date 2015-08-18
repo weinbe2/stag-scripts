@@ -97,7 +97,7 @@
     end
 	
 	cosh_string = '';
-	if (is_baryon == 0)
+	if (is_baryon == 0 && is_sinh == 0)
 		if (func_zshift == 0 && func_diff == 0)
 			cosh_string = 'Normal';
 		elseif (func_diff == 1) % zero shift doesn't matter.
@@ -105,7 +105,15 @@
 		else % must be zero shifted.
 			cosh_string = 'Zero Shifted';
 		end
-	else
+	elseif (is_sinh == 1)
+		if (func_zshift == 0 && func_diff == 0)
+			cosh_string = 'Sinh';
+		elseif (func_diff == 1) % zero shift doesn't matter.
+			cosh_string = 'Sinh Finite Difference';
+		else % must be zero shifted.
+			cosh_string = 'Sinh Zero Shifted';
+		end
+	else % is baryon
 		if (func_zshift == 0 && func_diff == 0)
 			cosh_string = 'Baryon';
 		elseif (func_diff == 1) % zero shift doesn't matter.

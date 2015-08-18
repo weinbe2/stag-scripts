@@ -183,6 +183,13 @@ function visual_fit(blockval, num_elim)
 		is_baryon = 0;
 	end
 	
+	% See if it's a negparity state.
+	if (strcmp(spectrum_text, 'plc'))
+		is_sinh = 1;
+	else
+		is_sinh = 0;
+	end
+	
 	% Get correct cosh functions in place.
 	run get_cosh; 
 	
@@ -965,6 +972,14 @@ function visual_fit(blockval, num_elim)
 						is_baryon = 0;
 					end
 					
+						% See if it's a negparity state.
+					if (strcmp(spectrum_text, 'plc'))
+						is_sinh = 1;
+					else
+						is_sinh = 0;
+					end
+
+					
 					run get_cosh; 
 					
                     run render_update;
@@ -1029,6 +1044,14 @@ function visual_fit(blockval, num_elim)
 					else
 						is_baryon = 0;
 					end
+					
+					% See if it's a negparity state.
+					if (strcmp(spectrum_text, 'plc'))
+						is_sinh = 1;
+					else
+						is_sinh = 0;
+					end
+
 					
 					run get_cosh; 
 					

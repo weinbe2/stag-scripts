@@ -10,7 +10,7 @@ rescale_corr = cat(2, scalar_sum, scalar_jack, scalar_jack_single);
 % First---check if we fold!
 if (func_fold == 1) % fold!
 	% Use the fold_data function!
-	rescale_corr = fold_data(rescale_corr, is_baryon);
+	rescale_corr = fold_data(rescale_corr, is_baryon, is_sinh);
 end
 
 % Next---check if we positive parity project it!
