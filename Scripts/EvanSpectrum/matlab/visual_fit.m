@@ -134,7 +134,7 @@ function visual_fit(blockval, num_elim)
 	
 	% Hold onto saved results.
 	saving = 0; 
-	results_save = zeros(1, 44);
+	results_save = zeros(1, 45);
     
     % Are we blocking?
     is_blocking = 0;
@@ -168,7 +168,7 @@ function visual_fit(blockval, num_elim)
 	mass_answer = 0; % Effectively rescaling by a zero mass, which gives 1.
 	vev_answer = 0; % subtract off this vev
 	log_answer = 0; % plot on a log scale. 
-	fit_form = 1; % One cosh. (2 = Two cosh, 3 = One cosh, one osc, 4 = Baryon, 5 = Cosh + const, 6 = cosh with zero shift).
+	fit_form = 1; % One cosh. 
     
 
 
@@ -252,6 +252,7 @@ function visual_fit(blockval, num_elim)
 						'Perform Jackknife', ...
 						'Save Modified Correlator', ...
 						'Begin Saving Results', ...
+						'Jackknife Saved Results', ...
 						'End Saving Results', ...
 						'Change Directory', ...
 						'Change State', ...
@@ -265,7 +266,7 @@ function visual_fit(blockval, num_elim)
 		option_answer = listdlg('PromptString','Choose an option.','SelectionMode', 'single', 'ListString', option_list);
 		
 		if (isempty(option_answer))
-			option_answer = 21;
+			option_answer = 22;
 		end
 		
 		switch option_answer
@@ -469,7 +470,7 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 15 % Reset Fit Options
+			case 16 % Reset Fit Options
 				
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit options?', 'Check!', ...
@@ -532,7 +533,7 @@ function visual_fit(blockval, num_elim)
                         loc_begin, loc_end);
 					
 					saving = 0;
-					results_save = zeros(1, 40);
+					results_save = zeros(1, 45);
 					
 				end
 				
@@ -728,7 +729,7 @@ function visual_fit(blockval, num_elim)
 				clear('new_guess_answers'); 
 			
 				
-			case 16 % Reset Params
+			case 17 % Reset Params
 			
 				% Ask first!
 				choice = questdlg('Are you sure you want to reset the fit params?', 'Check!', ...
@@ -745,7 +746,7 @@ function visual_fit(blockval, num_elim)
 				
 				run render_update;
 				
-			case 17 % Reset Constraints
+			case 18 % Reset Constraints
                 constraints = zeros(12,1);
                 chisq_dof = 0.0; p_val = 0.0; cond_num = 0;
 				
@@ -786,22 +787,24 @@ function visual_fit(blockval, num_elim)
 							% Override.
 							results_save(end, 1) = fit_minimum;
 							results_save(end, 2) = fit_maximum;
-							results_save(end, 3:2:25) = coefficients(:);
-							results_save(end, 4:2:26) = errors(:);
-							results_save(end, 27) = chisq_dof;
-							results_save(end, 28) = p_val;
-							results_save(end, 29:40) = constraints(:);
-							results_save(end, 41:2:43) = auxresult(:);
+							results_save(end, 3) = fit_form;
+							results_save(end, 4:2:26) = coefficients(:);
+							results_save(end, 5:2:27) = errors(:);
+							results_save(end, 28) = chisq_dof;
+							results_save(end, 29) = p_val;
+							results_save(end, 30:41) = constraints(:);
+							results_save(end, 42:2:44) = auxresult(:);
 						else
 							% Add to the end.
 							results_save(end+1, 1) = fit_minimum;
 							results_save(end, 2) = fit_maximum;
-							results_save(end, 3:2:25) = coefficients(:);
-							results_save(end, 4:2:26) = errors(:);
-							results_save(end, 27) = chisq_dof;
-							results_save(end, 28) = p_val;
-							results_save(end, 29:40) = constraints(:);
-							results_save(end, 41:2:43) = auxresult(:);
+							results_save(end, 3) = fit_form;
+							results_save(end, 4:2:26) = coefficients(:);
+							results_save(end, 5:2:27) = errors(:);
+							results_save(end, 28) = chisq_dof;
+							results_save(end, 29) = p_val;
+							results_save(end, 30:41) = constraints(:);
+							results_save(end, 42:2:44) = auxresult(:);
 						end
 					end
 					
@@ -877,24 +880,26 @@ function visual_fit(blockval, num_elim)
 							% Override.
 							results_save(end, 1) = fit_minimum;
 							results_save(end, 2) = fit_maximum;
-							results_save(end, 3:2:25) = coefficients(:);
-							results_save(end, 4:2:26) = errors(:);
-							results_save(end, 27) = chisq_dof;
-							results_save(end, 28) = p_val;
-							results_save(end, 29:40) = constraints(:);
-							results_save(end, 41:2:43) = auxresult(:);
-							results_save(end, 42:2:44) = auxerrors(:);
+							results_save(end, 3) = fit_form;
+							results_save(end, 4:2:26) = coefficients(:);
+							results_save(end, 5:2:27) = errors(:);
+							results_save(end, 28) = chisq_dof;
+							results_save(end, 29) = p_val;
+							results_save(end, 30:41) = constraints(:);
+							results_save(end, 42:2:44) = auxresult(:);
+							results_save(end, 43:2:45) = auxerrors(:);
 						else
 							% Add to the end.
 							results_save(end+1, 1) = fit_minimum;
 							results_save(end, 2) = fit_maximum;
-							results_save(end, 3:2:25) = coefficients(:);
-							results_save(end, 4:2:26) = errors(:);
-							results_save(end, 27) = chisq_dof;
-							results_save(end, 28) = p_val;
-							results_save(end, 29:40) = constraints(:);
-							results_save(end, 41:2:43) = auxresult(:);
-							results_save(end, 42:2:44) = auxerrors(:);
+							results_save(end, 3) = fit_form;
+							results_save(end, 4:2:26) = coefficients(:);
+							results_save(end, 5:2:27) = errors(:);
+							results_save(end, 28) = chisq_dof;
+							results_save(end, 29) = p_val;
+							results_save(end, 30:41) = constraints(:);
+							results_save(end, 42:2:44) = auxresult(:);
+							results_save(end, 43:2:45) = auxerrors(:);
 						end
 					end
 					
@@ -909,7 +914,7 @@ function visual_fit(blockval, num_elim)
 				clear('rescale_sum'); clear('rescale_err'); clear('rescale_cov_mat');
 				
 			
-			case 13 % Change Directory
+			case 14 % Change Directory
 				directory_tmp = inputdlg('Enter an input directory.', 'Input', 1, directory_answer);
 				
                 
@@ -1039,11 +1044,11 @@ function visual_fit(blockval, num_elim)
                     run render_update;
 					
 					saving = 0;
-					results_save = zeros(1, 40);
+					results_save = zeros(1, 45);
 					
 				end
 			
-			case 14 % Change State
+			case 15 % Change State
 				%spectrum_list = {'ps', 'sc', 'i5', 'ij', 'r0', 'ris', 'rij', 'ri5', 'ps2', 'nu', 'de'};
 				
 				spectrum_guess = listdlg('PromptString','Enter a spectrum to look at.','SelectionMode', 'single', 'ListString', spectrum_list, 'InitialValue', spectrum_answer);
@@ -1090,7 +1095,7 @@ function visual_fit(blockval, num_elim)
                         loc_begin, loc_end);
 		
 					saving = 0;
-					results_save = zeros(1, 40);
+					results_save = zeros(1, 45);
 					
 					% See if it's a baryon...
 					if (strcmp(spectrum_text, 'nu') || strcmp(spectrum_text, 'de'))
@@ -1125,10 +1130,10 @@ function visual_fit(blockval, num_elim)
 			case 11 % Begin saving.
 				if (saving == 0)
 					saving = 1;
-					results_save = zeros(1,44);
+					results_save = zeros(1,45);
 					run render_update;
 				end
-			case 12 % End saving.
+			case 13 % End saving.
 				if (saving == 1)
 					saving = 0;
 					
@@ -1137,11 +1142,138 @@ function visual_fit(blockval, num_elim)
 					
 					if (temp_fname ~= 0)
                         save(strcat([temp_directory, temp_fname]), 'results_save', '-ascii', '-double');
-						results_save = zeros(1,44);
+						results_save = zeros(1,45);
                     end
 					
 					run render_update;
 				end
+			case 12 % Perform a jackknife on all saved results.
+			
+				run prepare_data;
+				
+				% First, save current fit type, coefficients, etc.
+				back_fit_minimum = fit_minimum;
+				back_fit_maximum = fit_maximum;
+				back_fit_form = fit_form;
+				back_coefficients = coefficients;
+				back_errors = errors;
+				back_chisq_dof = chisq_dof;
+				back_p_val = p_val;
+				back_constraints = constraints;
+				back_auxresult = auxresult;
+				back_auxerrors = auxerrors;
+				
+				% Okay! Loop over all saved results. (Don't forget the first one is 0.)
+				
+				for s=2:size(results_save,1)
+				
+					% get the relevant parameters and initial guesses.
+					fit_minimum = results_save(s, 1);
+					fit_maximum = results_save(s, 2);
+					fit_form = results_save(s, 3);
+					coefficients = results_save(s, 4:2:26)';
+					errors = results_save(s, 5:2:27);
+					chisq_dof = results_save(s, 28);
+					p_val = results_save(s, 29);
+					constraints = results_save(s, 30:41);
+					auxresult = results_save(s, 42:2:44);
+					auxerrors = results_save(s, 43:2:45);
+					
+					% If errors already exist, skip it!
+					if (sum(abs(errors)) > 0)
+						continue
+					end
+			
+					% Whelp, here we go!
+					the_fit_output = get_all_nlfit_multi(rescale_sum, rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, fit_cut, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+					
+					
+					if (~(size(the_fit_output, 1) == 0))
+					
+						%coefficients(:) = the_fit_output(1, 3:14);
+						
+						chisq_dof = the_fit_output(1, 15);
+						p_val = the_fit_output(1, 16);
+						cond_num = the_fit_output(1, 17);
+						
+						% Into the rabbit hole...
+						coefficients_blocks = zeros(num_blocks, 12);
+						auxresult_blocks = zeros(num_blocks, 2);
+						
+						jack_flag = 1; is_blocking = 1;
+						for b=1:num_blocks
+							if (jack_flag == 1)
+								block_fit_output = get_all_nlfit_multi(rescale_jack(:,b), rescale_cov_mat, fit_minimum, fit_maximum, parse_Nt, fit_even, fit_cut, func_diff, mod(fit_form,4), (fit_form-mod(fit_form,4))/4, fit_diag, fit_x_prec, coefficients, constraints);
+							
+								if (numel(block_fit_output) == 0)
+									jack_flag = 0;
+									continue;
+								end
+							
+								coefficients_blocks(b, :) = block_fit_output(3:14);
+								
+								% Check auxillary results, such as F_pi.
+								if (is_fpi == 1)
+									if (strcmp(spectrum_text, 'ps2'))
+										auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)*3/(4*(coefficients_blocks(b,2)^3))); % f_pi
+									elseif (strcmp(spectrum_text, 'pll'))
+										auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)/(4*(coefficients_blocks(b,2)^3))); % f_pi
+									end
+								end
+								
+								if (mod(b,10) == 0)
+									run render_update;
+								end
+							end
+						end
+						if jack_flag == 1 % it worked!
+							coefficients_rep = repmat(coefficients', [num_blocks 1]);
+							errors = sqrt(sum((coefficients_blocks - coefficients_rep).^2,1).*(num_blocks-1)./num_blocks);
+							
+							auxresult_rep = repmat(auxresult, [num_blocks 1]);
+							auxerrors = sqrt(sum((auxresult_blocks - auxresult_rep).^2,1).*(num_blocks-1)./num_blocks);
+							
+						else % it failed
+							errors = zeros(1,12);
+							auxerrors = zeros(1,2);
+						end
+						
+						is_blocking  = 0;
+						
+						% Push errors to the save stack.								
+						results_save(s, 4:2:26) = coefficients(:);
+						results_save(s, 5:2:27) = errors(:);
+						results_save(s, 28) = chisq_dof;
+						results_save(s, 29) = p_val;
+						results_save(s, 42:2:44) = auxresult(:);
+						results_save(s, 43:2:45) = auxerrors(:);
+						
+						run render_update
+					
+					else
+						errors = zeros(12, 1);
+						run render_update
+					end
+				
+				
+				end
+				
+				clear('rescale_sum'); clear('rescale_err'); clear('rescale_cov_mat');
+				
+				% Restore values.
+				fit_minimum = back_fit_minimum;
+				fit_maximum = back_fit_maximum;
+				fit_form = back_fit_form;
+				coefficients = back_coefficients;
+				errors = back_errors;
+				chisq_dof = back_chisq_dof;
+				p_val = back_p_val;
+				constraints = back_constraints;
+				auxresult = back_auxresult;
+				auxerrors = back_auxerrors;
+				
+				run render_update;
+				
 			case 10 % Save modified correlator 
 			
 				% get the data in shape!
@@ -1170,7 +1302,7 @@ function visual_fit(blockval, num_elim)
 					save(strcat([temp_directory, temp_fname]), 'rescale_cov_mat', '-ascii', '-double');
 				end
 				
-			case 18 % visualize singular values.
+			case 19 % visualize singular values.
 				% Get the appropriate covariance matrix.
 				
 				t1 = fit_minimum;
@@ -1229,7 +1361,7 @@ function visual_fit(blockval, num_elim)
 				clear('t1');
 				clear('t2');
 			
-			case 19 % Visualize Effective Masses
+			case 20 % Visualize Effective Masses
 			
 				% Ask what values of K, N, and C to use.
 				% eff_K = 2; 
@@ -1346,7 +1478,7 @@ function visual_fit(blockval, num_elim)
                     
 				end
 							
-			case 20 % Save Effective Masses
+			case 21 % Save Effective Masses
                     % Ask what values of K, N, and C to use.
 				% eff_K = 2; 
 				% eff_N = 5; % minimum 2*n, maximum... Nt.
@@ -1465,7 +1597,7 @@ function visual_fit(blockval, num_elim)
 				end
 				
                     
-			case 21
+			case 22
 				flag = 0;
 		end
 		
