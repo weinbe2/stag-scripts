@@ -1,11 +1,52 @@
 
+
+\subsubsection{Overview}
+
+Connected measurements used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :PS_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. 
+~\\
+:STOCH_YES_BEGIN:
+\noindent Disconnected measurements used :ACT_MEAS_STOCH: measurements separated by :FREQ_MEAS_STOCH: trajectories (:MISS_MEAS_STOCH: missing). Blocksize of :SC_STOCH_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS_STOCH:.
+~\\
+:STOCH_YES_END:
+\noindent Notifications: :NOTIFY_STRING:
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+ State & Value & Note \\
+\hline
+ $aM_\pi^{wall}$ & $:PS_DIR_MASS:$ & From wall source. \\
+\hline
+ $aM_\pi^{pt}$ & $:PS2_DIR_MASS:$ & From point source. \\
+\hline
+ $aF_\pi$ & $:PS2_OSC_MASS:$ & From point source. \\
+\hline
+ $aM_{\rho}$ & $:RI5_DIR_MASS:$ & From wall source, partner $a_1$. \\
+:RIJ_COMM:\hline
+ :RIJ_COMM:$aM_{\rho}$ & $:RIJ_DIR_MASS:$ & From wall source, partner $b_1$.\\
+\hline
+ $aM_{a_1}$ & $:RI5_OSC_MASS:$ & From wall source. \\
+:RIJ_COMM:\hline
+ :RIJ_COMM:$aM_{b_1}$ & $:RIJ_OSC_MASS:$ & From wall source.\\
+\hline
+ $aM_{a_0}^{wall}$ & $:SC_OSC_MASS:$ & From wall source. \\
+:STOCH_COMM:\hline
+ :STOCH_COMM:$aM_{a_0}^{pt}$ & $:SC_STOCH_DIR_MASS:$ & From point source. \\
+:NU_COMM:\hline
+ :NU_COMM:$aM_{N+}$ & $:NU_DIR_MASS:$ & From wall source. \\
+\hline
+\end{tabular}
+\caption{Overview of fit values.}
+\end{table}
+
+\clearpage
+
 \subsubsection{Goldstone Boson Pion, Wall Source}
 
 Ensemble: :ENSEMBLE:
 
-This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with a wall source.
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :PS_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :PS_TMIN:, consistent $t_{max}$ of :PS_TMAX: was used for all fits.}}
+This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with a wall source. Preferred $t_{min}$ is :PS_TMIN: with :PS_NDIR: direct, :PS_NOSC: oscillating states, consistent $t_{max}$ of :PS_TMAX: was used for all fits.
 
 \begin{comment}
 \begin{table}[ht!]
@@ -41,11 +82,20 @@ This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with 
 \caption{Zoom in on ground state mass of Goldstone boson pion from a wall source.}
 \end{figure}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ps-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.ps}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ps-corr.pdf}
+\caption{Correlator plot of Goldstone boson pion with fit interval noted.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 
@@ -53,9 +103,7 @@ This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with 
 
 Ensemble: :ENSEMBLE:
 
-This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with a random wall source.
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :PS2_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :PS2_TMIN:, consistent $t_{max}$ of :PS2_TMAX: was used for all fits.}}
+This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with a random wall source. Preferred $t_{min}$ is :PS2_TMIN: with :PS2_NDIR: direct, :PS2_NOSC: oscillating states, consistent $t_{max}$ of :PS2_TMAX: was used for all fits.
 
 \begin{multicols}{2}
 \begin{figure}[H]
@@ -85,11 +133,20 @@ This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with 
 \end{figure}
 \end{multicols}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ps2-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.ps2}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ps2-corr.pdf}
+\caption{Goldstone boson correlator from a point source.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 
@@ -98,9 +155,7 @@ This is the $\gamma_5 \otimes \gamma_5$ state, no parity partner, measured with 
 
 Ensemble: :ENSEMBLE:
 
-This is the $\gamma_5 \otimes \gamma_5 \gamma_3$ pion, without parity partner, measured with a wall source. 
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :I5_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :I5_TMIN:, consistent $t_{max}$ of :I5_TMAX: was used for all fits.}}
+This is the $\gamma_5 \otimes \gamma_5 \gamma_3$ pion, without parity partner, measured with a wall source. Preferred $t_{min}$ is :I5_TMIN: with :I5_NDIR: direct, :I5_NOSC: oscillating states, consistent $t_{max}$ of :I5_TMAX: was used for all fits.
 
 \begin{multicols}{2}
 \begin{figure}[H]
@@ -123,17 +178,20 @@ This is the $\gamma_5 \otimes \gamma_5 \gamma_3$ pion, without parity partner, m
 \caption{Zoom in on the ground state mass of the i5 pion from a wall source.}
 \end{figure}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-i5-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.i5}
+\caption{Preferred fit coefficients.}
 \end{figure}
-
+\columnbreak
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-i5-dir.pdf}
-\caption{I should be a correlator plot!}
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-i5-corr.pdf}
+\caption{i5 taste split pion correlator from a wall source.}
 \end{figure}
+\end{multicols}
 
 \clearpage
 :TASTE_YES_END:
@@ -142,9 +200,7 @@ This is the $\gamma_5 \otimes \gamma_5 \gamma_3$ pion, without parity partner, m
 
 Ensemble: :ENSEMBLE:
 
-This is the $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ pion, parity partner $1 \otimes 1$ connected taste singlet scalar, measured with a wall source. 
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :SC_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :SC_TMIN:, consistent $t_{max}$ of :SC_TMAX: was used for all fits.}}
+This is the $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ pion, parity partner $1 \otimes 1$ connected taste singlet scalar, measured with a wall source. Prefered $t_{min}$ is :SC_TMIN: with :SC_NDIR: direct, :SC_NOSC: oscillating states, consistent $t_{max}$ of :SC_TMAX: was used for all fits.
 
 \begin{multicols}{2}
 \begin{figure}[H]
@@ -174,11 +230,20 @@ This is the $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ pion, parity partner $
 \end{figure}
 \end{multicols}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sc-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.sc}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sc-corr.pdf}
+\caption{The sc taste split pion with partner $a_0$ correlator from a wall source.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 
@@ -187,7 +252,7 @@ This is the $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ pion, parity partner $
 
 Ensemble: :ENSEMBLE:
 
-This is the $1 \otimes 1$ connected taste singlet scalar, parity partner $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ pion, measured with a stochastic source. Please note that this is switched from the wall source!
+This is the $1 \otimes 1$ connected taste singlet scalar, parity partner $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ pion, measured with a stochastic source. Please note that this is switched from the wall source! Preferred $t_{min}$ is :SC_STOCH_TMIN: with :SC_STOCH_NDIR: direct, :SC_STOCH_NOSC: oscillating states, consistent $t_{max}$ of :SC_STOCH_TMAX: was used for all fits.
 
 \begin{multicols}{2}
 \begin{figure}[H]
@@ -217,11 +282,20 @@ This is the $1 \otimes 1$ connected taste singlet scalar, parity partner $\gamma
 \end{figure}
 \end{multicols}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sc_stoch-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.sc_stoch}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sc_stoch-corr.pdf}
+\caption{The $a_0$ with partner sc taste split pion correlator from a point source.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 :STOCH_YES_END:
@@ -231,9 +305,7 @@ This is the $1 \otimes 1$ connected taste singlet scalar, parity partner $\gamma
 
 Ensemble: :ENSEMBLE:
 
-This is the $\gamma_4 \gamma_5 \otimes \gamma_1 \gamma_2$ pion, parity partner $1 \otimes \gamma_3$ connected taste singlet scalar, measured with a wall source. 
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :IJ_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :IJ_TMIN:, consistent $t_{max}$ of :IJ_TMAX: was used for all fits.}}
+This is the $\gamma_4 \gamma_5 \otimes \gamma_1 \gamma_2$ pion, parity partner $1 \otimes \gamma_3$ connected taste singlet scalar, measured with a wall source. Preferred $t_{min}$ is :IJ_TMIN: with :IJ_NDIR: direct, :IJ_NOSC: oscillating states, consistent $t_{max}$ of :IJ_TMAX: was used for all fits.
 
 \begin{multicols}{2}
 \begin{figure}[H]
@@ -263,11 +335,20 @@ This is the $\gamma_4 \gamma_5 \otimes \gamma_1 \gamma_2$ pion, parity partner $
 \end{figure}
 \end{multicols}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ij-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.ij}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ij-corr.pdf}
+\caption{The ij taste split pion with partner taste split $a_0$ correlator from a wall source.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 :TASTE_YES_END:
@@ -276,9 +357,7 @@ This is the $\gamma_4 \gamma_5 \otimes \gamma_1 \gamma_2$ pion, parity partner $
 
 Ensemble: :ENSEMBLE:
 
-This is the $\gamma_3 \gamma_4 \otimes \gamma_1 \gamma_5$ rho, parity partner $\gamma_3 \gamma_5 \otimes \gamma_1 \gamma_4$ axial vector, measured with a wall source. 
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :RI5_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :RI5_TMIN:, consistent $t_{max}$ of :RI5_TMAX: was used for all fits.}}
+This is the $\gamma_3 \gamma_4 \otimes \gamma_1 \gamma_5$ rho, parity partner $\gamma_3 \gamma_5 \otimes \gamma_1 \gamma_4$ axial vector, measured with a wall source. Preferred $t_{min}$ is :RI5_TMIN: with :RI5_NDIR: direct, :RI5_NOSC: oscillating states, consistent $t_{max}$ of :RI5_TMAX: was used for all fits.
 
 
 \begin{multicols}{2}
@@ -309,11 +388,20 @@ This is the $\gamma_3 \gamma_4 \otimes \gamma_1 \gamma_5$ rho, parity partner $\
 \end{figure}
 \end{multicols}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ri5-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.ri5}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-ri5-corr.pdf}
+\caption{The vector with partner $a_1$ axial correlator from a wall source.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 
@@ -322,9 +410,7 @@ This is the $\gamma_3 \gamma_4 \otimes \gamma_1 \gamma_5$ rho, parity partner $\
 
 Ensemble: :ENSEMBLE:
 
-This is the $\gamma_3 \otimes \gamma_2 \gamma_3$ rho, parity partner $\gamma_1 \gamma_2 \otimes \gamma_1$ tensor, measured with a wall source.
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :RIJ_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :RIJ_TMIN:, consistent $t_{max}$ of :RIJ_TMAX: was used for all fits.}}
+This is the $\gamma_3 \otimes \gamma_2 \gamma_3$ rho, parity partner $\gamma_1 \gamma_2 \otimes \gamma_1$ tensor, measured with a wall source. Preferred $t_{min}$ is :RIJ_TMIN: with :RIJ_NDIR: direct, :RIJ_NOSC: oscillating states, consistent $t_{max}$ of :RIJ_TMAX: was used for all fits.
 
 
 \begin{multicols}{2}
@@ -355,11 +441,20 @@ This is the $\gamma_3 \otimes \gamma_2 \gamma_3$ rho, parity partner $\gamma_1 \
 \end{figure}
 \end{multicols}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-rij-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.rij}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-rij-corr.pdf}
+\caption{The vector with partner $b_1$ tensor correlator from a wall source.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 :RIJ_YES_END:
@@ -369,9 +464,7 @@ This is the $\gamma_3 \otimes \gamma_2 \gamma_3$ rho, parity partner $\gamma_1 \
 
 Ensemble: :ENSEMBLE:
 
-This is the $\mathbf{8}$-rep Nucleon (positive and negative parity), measured with a wall source.
-
-{\small{Used :ACT_MEAS: measurements separated by :FREQ_MEAS: trajectories (:MISS_MEAS: missing). Blocksize of :NU_MEASPERBLOCK: measurements. Thermalization cut of trajectory :THERM:. Measurements performed up to trajectory :LAST_MEAS:. Prefered $t_{min}$ is :NU_TMIN:, consistent $t_{max}$ of :NU_TMAX: was used for all fits.}}
+This is the $\mathbf{8}$-rep Nucleon (positive and negative parity), measured with a wall source. Preferred $t_{min}$ is :NU_TMIN: with :NU_NDIR: direct, :NU_NOSC: oscillating states, consistent $t_{max}$ of :NU_TMAX: was used for all fits.
 
 \begin{multicols}{2}
 \begin{figure}[H]
@@ -401,11 +494,20 @@ This is the $\mathbf{8}$-rep Nucleon (positive and negative parity), measured wi
 \end{figure}
 \end{multicols}
 
+\begin{multicols}{2}
 \begin{figure}[H]
 \centering
-\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-nu-dir.pdf}
-\caption{I should be a correlator plot!}
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.nu}
+\caption{Preferred fit coefficients.}
 \end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-nu-corr.pdf}
+\caption{The $\mathbf{8}$-rep nucleon and partner from a wall source.}
+\end{figure}
+\end{multicols}
 
 \clearpage
 :NU_YES_END:

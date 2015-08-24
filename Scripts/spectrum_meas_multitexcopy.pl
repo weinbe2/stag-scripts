@@ -242,16 +242,34 @@ foreach my $params_ref (@ensemble_list)
 	$sed_commands{'RIJ_YES_END'} = "\\\\end{comment}";
 	$sed_commands{'TASTE_YES_BEGIN'} = "\\\\begin{comment}";
 	$sed_commands{'TASTE_YES_END'} = "\\\\end{comment}";
+	$sed_commands{'STOCH_COMM'} = "%";
+	$sed_commands{'NU_COMM'} = "%";
+	$sed_commands{'RIJ_COMM'} = "%";
+	$sed_commands{'TASTE_COMM'} = "%";
 	
 	# Cool! Next, we need to go through all the inputed states and grab their t_min, t_max, and blocksize. (Item 2, 4, 5).
 
 	my $milc_flag = 0;
+	
+	# Prepare to set notify strings.
+	
+	# Save pion mass from each source.
+	my $cps = 0;
+	my $eps = 0;
+	my $cps2 = 0;
+	my $eps2 = 0;
+	
+	# Save a0 mass from each source.
+	my $csc = 0;
+	my $esc = 0;
+	my $cscs = 0;
+	my $escs = 0;
 
 	foreach my $indiv_state (@state_list)
 	{
 		# First, make sure a multifitparams exists for this state. Otherwise, print
 		# a warning, and skip on to the next state!
-		if (-f "$path/$ensemble"."/spectrum2/multifitparams/multifitparam.$indiv_state" && -f "$path/$ensemble/spectrum2/corr/corr.$indiv_state")
+		if (-f "$path/$ensemble"."/spectrum2/multifitparams/multifitparam.$indiv_state" && -f "$path/$ensemble/spectrum2/corr/corr.$indiv_state" && -f "$path/$ensemble/spectrum2/multicentral/multicentral.$indiv_state")
 		{
 			# Next, check the milc flag.
 			if ($indiv_state eq "rvt" || $indiv_state eq "rpv")
@@ -264,24 +282,28 @@ foreach my $params_ref (@ensemble_list)
 			{
 				$sed_commands{'RIJ_YES_BEGIN'} = "";
 				$sed_commands{'RIJ_YES_END'} = "";
+				$sed_commands{'RIJ_COMM'} = "";
 			}
 			
 			if ($indiv_state eq "sc_stoch")
 			{
 				$sed_commands{'STOCH_YES_BEGIN'} = "";
 				$sed_commands{'STOCH_YES_END'} = "";
+				$sed_commands{'STOCH_COMM'} = "";
 			}
 			
 			if ($indiv_state eq "nu")
 			{
 				$sed_commands{'NU_YES_BEGIN'} = "";
 				$sed_commands{'NU_YES_END'} = "";
+				$sed_commands{'NU_COMM'} = "";
 			}
 			
 			if ($indiv_state eq "ij" || $indiv_state eq "i5")
 			{
 				$sed_commands{'TASTE_YES_BEGIN'} = "";
 				$sed_commands{'TASTE_YES_END'} = "";
+				$sed_commands{'TASTE_COMM'} = "";
 			}
 			
 			# Next, make sure a fitparams exists. 
@@ -298,18 +320,108 @@ foreach my $params_ref (@ensemble_list)
 			my $tmax = $info_splitter[1];
 			my $blocksize = $info_splitter[2];
 			
+			open($file_handle, "<$path/$ensemble/spectrum2/multicentral/multicentral.$indiv_state");
+			@info_line = <$file_handle>;
+			close($file_handle);
+			
+			@info_splitter = split(' ', $info_line[0]);
+			my @info_splitter2 = split(' ', $info_line[1]);
+			
+			my $ndir = $info_splitter[0];
+			my $cdir = $info_splitter[1];
+			my $edir = $info_splitter[2];
+			
+			my $nosc = $info_splitter2[0];
+			my $cosc = $info_splitter2[1];
+			my $eosc = $info_splitter2[2];
+			
+			if ($indiv_state eq "ps")
+			{
+				$cps = $cdir;
+				$eps = $edir;
+			}
+			if ($indiv_state eq "ps2")
+			{
+				$cps2 = $cdir;
+				$eps2 = $edir;
+			}
+			if ($indiv_state eq "sc")
+			{
+				$csc = $cosc;
+				$esc = $eosc;
+			}
+			if ($indiv_state eq "sc_stoch")
+			{
+				$cscs = $cdir;
+				$escs = $edir;
+			}
+			
 			# Verified!
 			#printf("State $indiv_state has tmin $tmin, tmax $tmax, and blocksize $blocksize\n");
 			$sed_commands{uc($indiv_state)."_TMIN"} = $tmin;
 			$sed_commands{uc($indiv_state)."_TMAX"} = $tmax;
 			$sed_commands{uc($indiv_state)."_MEASPERBLOCK"} = $blocksize;
-		
+			$sed_commands{uc($indiv_state)."_NDIR"} = $ndir;
+			$sed_commands{uc($indiv_state)."_NOSC"} = $nosc;
+			$sed_commands{uc($indiv_state)."_DIR_MASS"} = parenFormWiki($cdir,$edir);
+			if ($cosc > 0)
+			{
+				$sed_commands{uc($indiv_state)."_OSC_MASS"} = parenFormWiki($cosc,$eosc);
+			}
 		}
 		else
 		{
 			print "A fitparams file for state $indiv_state in ensemble $ensemble does not exist. Skipping to the next state.\n";
 		}
 	}
+	
+	# Prepare the notify string.
+	my $notify_string = "";
+	
+	# Compare pion masses.
+	my $ps_dev = 0;
+	if ($cps > $cps2)
+	{
+		$ps_dev = ceil(($cps-$cps2)/($eps+$eps2));
+	}
+	else
+	{
+		$ps_dev = ceil(($cps2-$cps)/($eps+$eps2));
+	}
+	
+	if ($ps_dev > 2)
+	{
+		$notify_string = $notify_string."The pion masses agree at only \\alert{$ps_dev sigma}, which is large.";
+	}
+	
+	# Compare a0 masses.
+	my $a0_dev = 0;
+	if ($cscs != 0)
+	{
+		if ($csc > $cscs)
+		{
+			$a0_dev = ceil(($csc-$cscs)/($esc+$escs));
+		}
+		else
+		{
+			$a0_dev = ceil(($cscs-$csc)/($escs+$esc));
+		}
+		if ($a0_dev > 2)
+		{
+			$notify_string = $notify_string."The \$a_0\$ masses agree at only \\alert{$a0_dev sigma}, which is large.";
+		}
+	}
+	else
+	{
+		$notify_string = $notify_string."There are no stochastic \$a_0\$ measurements."
+	}
+	
+	if ($notify_string eq "")
+	{
+		$notify_string = "None.";
+	}
+	
+	$sed_commands{"NOTIFY_STRING"} = $notify_string;
 	
 	# The sed_commands hashtable contains all of the sed replacements to perform.
 	# Let's build the executable command!
@@ -339,3 +451,75 @@ foreach my $params_ref (@ensemble_list)
 
 
 
+sub parenFormWiki
+{
+   my ($the_value, $the_error) = @_;
+   
+   my $neg_flag = 1;
+   if ($the_value < 0)
+   {
+		$neg_flag = -1;
+		$the_value = -$the_value;
+   }
+   
+   if (abs($the_value) < 1e-10)
+   {
+	 return "0";
+   }
+
+   my $err_size = floor(log($the_error)/log(10));
+
+   my $value_size = floor(log(abs($the_value))/log(10));
+
+   $the_error *= 10**(-$err_size+1);
+
+        if (floor($the_error + 0.5) == 100) # Special case.
+        {
+                $the_error/=10;
+                $err_size--;
+        }
+
+   $the_value *= 10**(-$err_size+1);
+
+
+   $the_value = floor($the_value + 0.5);
+   $the_error = floor($the_error + 0.5);
+
+   #print $the_value." ".$the_error."\n";
+
+   # If the value is O(10^1) to O(10^-2), don't exponential notation it.
+   
+   my $negative_string = "";
+   if ($neg_flag == -1)
+   {
+	$negative_string = "-";
+	}
+   
+   if ($value_size <= 1 && $value_size >= -2)
+   {
+		switch ($value_size)
+		{
+			case 1 {
+				return $negative_string.substr($the_value, 0, 2).".".substr($the_value, 2)."(".$the_error.")";
+			}
+			case 0 {
+				return $negative_string.substr($the_value, 0, 1).".".substr($the_value, 1)."(".$the_error.")";
+			}
+			case -1 {
+				return $negative_string."0.".$the_value."(".$the_error.")";
+			}
+			case -2 {
+				return $negative_string."0.0".$the_value."(".$the_error.")";
+			}
+		}
+   }
+   else
+   {
+		return $negative_string.substr($the_value, 0, 1).".".substr($the_value, 1)."(".$the_error.") x 10 ^$value_size^";
+	}
+   
+
+
+        #return 0;
+
+}

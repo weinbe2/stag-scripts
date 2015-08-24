@@ -246,6 +246,20 @@ foreach my $tchg (@num_change)
 }
 printf("\n");
 
+# If there's a multifitinterval file, grab it and learn something!
+my $tmin_pref = 0;
+my $tmax_pref = 0;
+if (-f "$path/$relpath/$direc/spectrum2/multifitparams/multifitparam.$state")
+{
+	open(my $fit_handle, "<$path/$relpath/$direc/spectrum2/multifitparams/multifitparam.$state");
+	my @fit_lines = <$fit_handle>;
+	my @splitted_values = split(' ', $fit_lines[0]);
+	$tmin_pref = $splitted_values[0];
+	$tmax_pref = $splitted_values[1];
+	close($fit_handle);
+	printf("Prf tmin %d\n", $tmin_pref);
+}
+
 # Alright! Learn something about the mean and error of ground states.
 # This helps us pick y-intervals.
 
@@ -255,6 +269,25 @@ my $err_dir = 0;
 my $mean_osc = 0;
 my $err_osc = 0;
 
+# Get preferred ones too, if we can.
+my $pref_dir = 0;
+my $pref_dir_err = 0;
+my $pref_osc = 0;
+my $pref_osc_err = 0;
+my $pref_num_dir = 0;
+my $pref_num_osc = 0;
+
+# Save masses, coefficients.
+my @mdc_list = ();
+my @mde_list = ();
+my @moc_list = ();
+my @moe_list = ();
+
+my @cdc_list = ();
+my @cde_list = ();
+my @coc_list = ();
+my @coe_list = ();
+
 foreach my $elem (@fit_info)
 {
 	my @vals = @{$elem};
@@ -262,16 +295,52 @@ foreach my $elem (@fit_info)
 	{
 		$mean_dir += $vals[DIRMASS1]/$num_fits;
 		$err_dir += $vals[DIRMASS1+1]/$num_fits;
+		if ($vals[TMIN] == $tmin_pref)
+		{
+			$pref_dir = $vals[DIRMASS1];
+			$pref_dir_err = $vals[DIRMASS1+1];
+			$pref_num_dir = $vals[FITTYPE]%4;
+			
+			for (my $j = 0; $j < $pref_num_dir; $j++)
+			{
+				push(@cdc_list, $vals[DIRAMP1+4*$j]);
+				push(@cde_list, $vals[DIRAMP1+4*$j+1]);
+				push(@mdc_list, $vals[DIRMASS1+4*$j]);
+				push(@mde_list, $vals[DIRMASS1+4*$j+1]);
+			}
+		}
 	}
 	if ($num_osc > 0)
 	{
 		$mean_osc += $vals[OSCMASS1]/$num_fits;
 		$err_osc += $vals[OSCMASS1+1]/$num_fits;
+		if ($vals[TMIN] == $tmin_pref)
+		{
+			$pref_osc = $vals[OSCMASS1];
+			$pref_osc_err = $vals[OSCMASS1+1];
+			$pref_num_osc = ($vals[FITTYPE]-$pref_num_dir)/4;
+			
+			for (my $j = 0; $j < $pref_num_osc; $j++)
+			{
+				push(@coc_list, $vals[OSCAMP1+4*$j]);
+				push(@coe_list, $vals[OSCAMP1+4*$j+1]);
+				push(@moc_list, $vals[OSCMASS1+4*$j]);
+				push(@moe_list, $vals[OSCMASS1+4*$j+1]);
+			}
+		}
 	}
 	if ($is_fpi == 1) # We have fpi, reuse oscil.
 	{
 		$mean_osc += $vals[AUX1]/$num_fits;
 		$err_osc += $vals[AUX1+1]/$num_fits;
+		if ($vals[TMIN] == $tmin_pref)
+		{
+			$pref_osc = $vals[AUX1];
+			$pref_osc_err = $vals[AUX1+1];
+			
+			push(@moc_list, $vals[AUX1]);
+			push(@moe_list, $vals[AUX1+1]);
+		}
 	}
 }
 
@@ -279,6 +348,129 @@ printf("Avg dir. = %.6f\n", $mean_dir);
 printf("Err dir. = %.6f\n", $err_dir);
 printf("Avg osc. = %.6f\n", $mean_osc);
 printf("Err osc. = %.6f\n", $err_osc);
+
+# Save the preferred info to a multicentral file.
+# Save #dir, #osc, and center+errs of each.
+open (my $an_outfile, ">$path/$relpath/$direc/spectrum2/multicentral/multicentral.".$state);
+print $an_outfile "$pref_num_dir $pref_dir $pref_dir_err\n";
+print $an_outfile "$pref_num_osc $pref_osc $pref_osc_err\n";
+close($an_outfile);
+
+# Also, save all preferred coefficients to a tex table.
+
+my @table_lines = ();
+if ($num_dir > 0 && $num_osc == 0 && $is_fpi == 0)
+{
+	(my $dirl = $dir_label) =~ s/\\\\/\\/;
+	push(@table_lines, "\\begin{tabular}{|c|c|}");
+	push(@table_lines, "\$A\$ & \$".$dirl."\$ \\\\");
+}
+elsif ($num_osc > 0)
+{
+	(my $dirl = $dir_label) =~ s/\\\\/\\/;
+	(my $oscl = $osc_label) =~ s/\\\\/\\/;
+	push(@table_lines, "\\begin{tabular}{|c|c|c|c|}");
+	push(@table_lines, "\$A\$ & \$".$dirl."\$ & \$B\$ & \$".$oscl."\$\\\\");
+}
+elsif ($is_fpi == 1)
+{
+	(my $dirl = $dir_label) =~ s/\\\\/\\/;
+	(my $oscl = $osc_label) =~ s/\\\\/\\/;
+	push(@table_lines, "\\begin{tabular}{|c|c|c|}");
+	push(@table_lines, "\$A\$ & \$".$dirl."\$ & \$".$oscl."\$\\\\");
+}
+
+for (my $j = 0; $j < 3; $j++)
+{
+	my $local_string = "";
+	# There's both a direct and oscillating state.
+	if ((defined $mdc_list[$j]) && (defined $moc_list[$j]))
+	{
+		if ($is_fpi == 1)
+		{
+			$local_string = sprintf("%s & %s & %s \\\\", parenForm($cdc_list[$j], $cde_list[$j]), parenForm($mdc_list[$j], $mde_list[$j]), parenForm($moc_list[$j], $moe_list[$j]));
+		}
+		else
+		{
+			$local_string = sprintf("%s & %s & %s & %s \\\\", parenForm($cdc_list[$j], $cde_list[$j]), parenForm($mdc_list[$j], $mde_list[$j]), parenForm($coc_list[$j], $coe_list[$j]), parenForm($moc_list[$j], $moe_list[$j]));
+		}
+	}
+	elsif (defined $mdc_list[$j]) # there's just a direct state.
+	{
+		if ($num_osc > 0) # there just isn't an osc. state here.
+		{
+			$local_string = sprintf("%s & %s & --- & --- \\\\", parenForm($cdc_list[$j], $cde_list[$j]), parenForm($mdc_list[$j], $mde_list[$j]));
+		}
+		elsif ($is_fpi == 1)
+		{
+			$local_string = sprintf("%s & %s & --- \\\\", parenForm($cdc_list[$j], $cde_list[$j]), parenForm($mdc_list[$j], $mde_list[$j]));
+		}
+		else # it's the wall source pion
+		{
+			$local_string = sprintf("%s & %s \\\\", parenForm($cdc_list[$j], $cde_list[$j]), parenForm($mdc_list[$j], $mde_list[$j]));
+		}
+	}
+	elsif (defined $moc_list[$j]) # there's just an oscil state.
+	{
+		# there's no weird conditionals here.
+		$local_string = sprintf("--- & --- & %s & %s \\\\", parenForm($coc_list[$j], $coe_list[$j]), parenForm($moc_list[$j], $moe_list[$j]));
+	}
+	else # Ain't got nuttin!
+	{
+		if ($num_osc > 0) # there just isn't an osc. state here.
+		{
+			$local_string = "--- & --- & --- & --- \\\\";
+		}
+		elsif ($is_fpi == 1)
+		{
+			$local_string = "--- & --- & --- \\\\";
+		}
+		else # it's the wall source pion
+		{
+			$local_string = "--- & --- \\\\";
+		}
+	}
+		
+	push(@table_lines, $local_string);
+}
+
+# Write it out to file!
+open (my $outfile5, ">$path/$relpath/$direc/spectrum2/tex/multitable.$state");
+foreach my $line (@table_lines)
+{
+	print $outfile5 $line."\n\\hline\n";
+}
+print $outfile5 "\\end{tabular}\n";
+close($outfile5);
+
+##############################
+# Prepare the fit curve now! #
+##############################
+
+my $curve_line = "";
+for (my $j = 0; $j < $pref_num_dir; $j++)
+{
+	if ($state eq "nu" || $state eq "de")
+	{
+		$curve_line = $curve_line."+".$cdc_list[$j]."*(exp(".$mdc_list[$j]."*(".($ensemble_params{T}/2)."-x))-cos(3.1415926535*x)*exp(-".$mdc_list[$j]."*(".($ensemble_params{T}/2)."-x)))/2.0";
+	}
+	else
+	{
+		$curve_line = $curve_line."+".$cdc_list[$j]."*cosh(".$mdc_list[$j]."*(".($ensemble_params{T}/2)."-x))";
+	}
+}
+
+for (my $j = 0; $j < $pref_num_osc; $j++)
+{
+	if ($state eq "nu" || $state eq "de")
+	{
+		$curve_line = $curve_line."+".$coc_list[$j]."*cos(3.1415926535*x)*(exp(".$moc_list[$j]."*(".($ensemble_params{T}/2)."-x))-cos(3.1415926535*x)*exp(-".$moc_list[$j]."*(".($ensemble_params{T}/2)."-x)))/2.0";
+	}
+	else
+	{
+		$curve_line = $curve_line."+".$coc_list[$j]."*cos(3.1415926535*x)*cosh(".$moc_list[$j]."*(".($ensemble_params{T}/2)."-x))";
+	}
+}
 
 # Bound the error to be < 0.01. This keeps the y-range on plots
 # from being too large.
@@ -406,13 +598,13 @@ if ($is_fpi == 1)
 }
 
 # Save pvalues!
-open(my $outfile3, ">EvanSpectrum/scripts/tmp_space/pvalue");
+open(my $outfile4, ">EvanSpectrum/scripts/tmp_space/pvalue");
 foreach my $a_row (@fit_info)
 {
 	my @the_row = @{$a_row};
-	print $outfile3 $the_row[TMIN]." ".$the_row[PVAL]."\n";
+	print $outfile4 $the_row[TMIN]." ".$the_row[PVAL]."\n";
 }
-close($outfile3);
+close($outfile4);
 
 if ($singlefit_flag == 1)
 {
@@ -427,7 +619,62 @@ if ($singlefit_flag == 1)
 	}
 	close($outfile3);
 }
+############################################################
+# Copy the correlator and learn something about its range.
+############################################################
+
+# First, load the sum file.
+open (my $corr_handle, "<$path/$relpath/$direc/spectrum2/sum/sum.$state");
+my @corr_contents = <$corr_handle>;
+close($corr_handle);
+
+# Split things into tmin/tmax/whatnot.
+my @corr_t = ();
+my @corr_val = ();
+my @corr_err = ();
+my $max_corr_val = 0;
+my $min_corr_val = 1e100;
+
+foreach my $corr_line (@corr_contents)
+{
+	my @temp_splitter = split(' ', $corr_line);
+	push(@corr_t, $temp_splitter[0]);
+	push(@corr_val, $temp_splitter[1]);
+	push(@corr_err, $temp_splitter[2]);
+	
+	if (abs($temp_splitter[1])+$temp_splitter[2] > $max_corr_val)
+	{
+		$max_corr_val = abs($temp_splitter[1])+$temp_splitter[2];
+	}
+	
+	if (abs(abs($temp_splitter[1])-$temp_splitter[2]) < $min_corr_val && abs($temp_splitter[1]) > 1e-9)
+	{
+		$min_corr_val = abs(abs($temp_splitter[1])-$temp_splitter[2]);
+	}
+	
+}
+
+
+
+# Write the correlator out to file. Maybe this is redundant now!
+
+open(my $outcorr_handle, ">./EvanSpectrum/scripts/tmp_space/corr.dat");
+for (my $i = 0; $i < @corr_t; $i++)
+{
+	if ($state eq "sc_stoch") # Because it's all negative
+	{
+		print $outcorr_handle "$corr_t[$i] ".(-1*$corr_val[$i])." $corr_err[$i]\n";
+	}
+	else
+	{
+		print $outcorr_handle "$corr_t[$i] $corr_val[$i] $corr_err[$i]\n";
+	}
+}
+close($outcorr_handle);
+
+############################################
 # I guess it's time to build some plots!
+############################################
 
 open(my $outfile3, ">EvanSpectrum/scripts/tmp_space/plots.plt");
 
@@ -444,8 +691,12 @@ print $outfile3 "set style line 3 lt 1 lc rgb '#885555' pt 7 ps $ptsize\n";
 print $outfile3 "set style line 4 lt 1 lc rgb '#5555FF' pt 5 ps $ptsize\n";
 print $outfile3 "set style line 5 lt 1 lc rgb '#558855' pt 13 ps $ptsize\n";
 print $outfile3 "set style line 21 lt 1 lc rgb '#000000' lw 3 pt 10 ps $ptsize\n";
+print $outfile3 "set style line 22 lt 1 lc rgb '#CC0066' lw 3 pt 10 ps $ptsize\n";
+print $outfile3 "set style line 31 lt 2 lc rgb '#555555' pt 11 ps $ptsize\n";
 
+##########################################
 # First, prepare the plot of all states.
+##########################################
 
 print $outfile3 "set terminal epslatex color standalone\n";
 print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/allstates.tex\"\n";
@@ -466,8 +717,15 @@ my $sm = 10;
 my $iter = 1;
 foreach my $tchg (@num_change)
 {
-	print $outfile3 "set arrow $iter from ".($tchg).",0 to ".($tchg).",1 nohead ls 21\n";
+	print $outfile3 "set arrow $iter from ".($tchg).",0 to ".($tchg).",1 nohead ls 31\n";
 	$iter++;
+}
+
+# If tmin_pref is set, window the preferred value.
+if ($tmin_pref != 0)
+{
+	print $outfile3 "set arrow 10 from ".($tmin_pref-0.3).",0 to ".($tmin_pref-0.3).",1 nohead ls 22\n";
+	print $outfile3 "set arrow 11 from ".($tmin_pref+0.3).",0 to ".($tmin_pref+0.3).",1 nohead ls 22\n";
 }
 
 # Prepare to plot!
@@ -544,7 +802,9 @@ foreach my $tchg (@num_change)
 	$iter++;
 }
 
+#################################
 # Next, create zoomed in plots.
+#################################
 
 # Direct channel.
 
@@ -566,8 +826,18 @@ if ($num_dir > 0)
 	$iter = 1;
 	foreach my $tchg (@num_change)
 	{
-		print $outfile3 "set arrow $iter from ".($tchg).",".($mean_dir-$sm*$err_dir)." to ".($tchg).",".($mean_dir+$sm*$err_dir)." nohead ls 21\n";
+		print $outfile3 "set arrow $iter from ".($tchg).",".($mean_dir-$sm*$err_dir)." to ".($tchg).",".($mean_dir+$sm*$err_dir)." nohead ls 31\n";
 		$iter++;
+	}
+	
+	if ($tmin_pref != 0)
+	{
+		print $outfile3 "set arrow 10 from ".($tmin_pref-0.3).",".($mean_dir-$sm*$err_dir)." to ".($tmin_pref-0.3).",".($mean_dir+$sm*$err_dir)." nohead ls 22\n";
+		print $outfile3 "set arrow 11 from ".($tmin_pref+0.3).",".($mean_dir-$sm*$err_dir)." to ".($tmin_pref+0.3).",".($mean_dir+$sm*$err_dir)." nohead ls 22\n";
+		
+		print $outfile3 "set arrow 12 from ".($tmin_min-1).",".($pref_dir+$pref_dir_err)." to ".($tmin_max+1).",".($pref_dir+$pref_dir_err)." nohead ls 22\n";
+		print $outfile3 "set arrow 13 from ".($tmin_min-1).",".($pref_dir-$pref_dir_err)." to ".($tmin_max+1).",".($pref_dir-$pref_dir_err)." nohead ls 22\n";
+		
 	}
 
 	# Prepare to plot!
@@ -579,7 +849,7 @@ if ($num_dir > 0)
 		
 	if ($singlefit_flag == 1)
 	{
-		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlefit_dir\" using (\$1+0.2):2:3 with yerrorbars ls ".(1+10)." notitle";
+		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlefit_dir\" using (\$1+0.2):2:3 with yerrorbars ls ".(2+10)." notitle";
 	}
 
 	print $outfile3 "\n";
@@ -604,8 +874,17 @@ if ($num_osc > 0 || $is_fpi == 1)
 	$iter = 1;
 	foreach my $tchg (@num_change)
 	{
-		print $outfile3 "set arrow $iter from ".($tchg).",".($mean_osc-$sm*$err_osc)." to ".($tchg).",".($mean_osc+$sm*$err_osc)." nohead ls 21\n";
+		print $outfile3 "set arrow $iter from ".($tchg).",".($mean_osc-$sm*$err_osc)." to ".($tchg).",".($mean_osc+$sm*$err_osc)." nohead ls 31\n";
 		$iter++;
+	}
+	
+	if ($tmin_pref != 0)
+	{
+		print $outfile3 "set arrow 10 from ".($tmin_pref-0.3).",".($mean_osc-$sm*$err_osc)." to ".($tmin_pref-0.3).",".($mean_osc+$sm*$err_osc)." nohead ls 22\n";
+		print $outfile3 "set arrow 11 from ".($tmin_pref+0.3).",".($mean_osc-$sm*$err_osc)." to ".($tmin_pref+0.3).",".($mean_osc+$sm*$err_osc)." nohead ls 22\n";
+		
+		print $outfile3 "set arrow 12 from ".($tmin_min-1).",".($pref_osc+$pref_osc_err)." to ".($tmin_max+1).",".($pref_osc+$pref_osc_err)." nohead ls 22\n";
+		print $outfile3 "set arrow 13 from ".($tmin_min-1).",".($pref_osc-$pref_osc_err)." to ".($tmin_max+1).",".($pref_osc-$pref_osc_err)." nohead ls 22\n";
 	}
 
 	# Prepare to plot!
@@ -617,14 +896,22 @@ if ($num_osc > 0 || $is_fpi == 1)
 		
 	if ($singlefit_flag == 1)
 	{
-		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlefit_osc\" using (\$1+0.2):2:3 with yerrorbars ls ".(1+3+10)." notitle";
+		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlefit_osc\" using (\$1+0.2):2:3 with yerrorbars ls ".(2+3+10)." notitle";
 	}
 
 	print $outfile3 "\n";
 	print $outfile3 "set output\n";
 }
 
+################################
 # Last, create a p-value plot.
+################################
+
+if ($tmin_pref != 0)
+{
+	print $outfile3 "unset arrow 12\n";
+	print $outfile3 "unset arrow 13\n";
+}
 
 if ($num_dir > 0)
 {
@@ -644,8 +931,14 @@ if ($num_dir > 0)
 	$iter = 1;
 	foreach my $tchg (@num_change)
 	{
-		print $outfile3 "set arrow $iter from ".($tchg).",0 to ".($tchg).",1 nohead ls 21\n";
+		print $outfile3 "set arrow $iter from ".($tchg).",0 to ".($tchg).",1 nohead ls 31\n";
 		$iter++;
+	}
+	
+	if ($tmin_pref != 0)
+	{
+		print $outfile3 "set arrow 10 from ".($tmin_pref-0.3).",0 to ".($tmin_pref-0.3).",1 nohead ls 22\n";
+		print $outfile3 "set arrow 11 from ".($tmin_pref+0.3).",0 to ".($tmin_pref+0.3).",1 nohead ls 22\n";
 	}
 
 	# Prepare to plot!
@@ -660,11 +953,39 @@ if ($num_dir > 0)
 		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlepvalue\" using (\$1+0.2):2 ls ".(1+10)." notitle";
 	}
 	
-	print $outfile3 ", 0.05 ls 15 title \"5 percent\", 0.01 ls 5 title \"1 percent\"";
+	print $outfile3 ", 0.05 ls 15 title \"5 percent\"";
 
 	print $outfile3 "\n";
 	print $outfile3 "set output\n";
 }
+
+#####################################################
+# And now, the most fun possible, correlator plots!
+#####################################################
+
+# Reset arrows.
+$iter = 1;
+foreach my $tchg (@num_change)
+{
+	print $outfile3 "unset arrow $iter\n";
+	$iter++;
+}
+
+print $outfile3 "set xlabel \"\$t\$\"\n";
+print $outfile3 "set ylabel \"Log Plot of Correlator\"\n";
+print $outfile3 "set xrange [-0.4:".($ensemble_params{T}/2+0.4)."]\n";
+print $outfile3 "set log y\n";
+print $outfile3 "set format y \"%2.0e\"\n";
+print $outfile3 "set yrange [".(0.9*$min_corr_val).":".(1.1*$max_corr_val)."]\n";
+print $outfile3 "set samples 1000\n";
+print $outfile3 "set arrow 10 from ".($tmin_pref-0.5).",".(0.9*$min_corr_val)." to ".($tmin_pref-0.5).",".(1.1*$max_corr_val)." nohead ls 22\n";
+print $outfile3 "set arrow 11 from ".($tmax_pref+0.5).",".(0.9*$min_corr_val)." to ".($tmax_pref+0.5).",".(1.1*$max_corr_val)." nohead ls 22\n";
+
+print $outfile3 "set terminal epslatex color standalone\n";
+print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/corr.tex\"\n";
+print $outfile3 "plot \"./EvanSpectrum/scripts/tmp_space/corr.dat\" using 1:2:3 with yerrorbars ls 1 notitle, \\\n";
+print $outfile3 "   $curve_line ls 2 notitle\n";
+print $outfile3 "set output\n";
 
 
 `gnuplot -e "load \\"EvanSpectrum/scripts/tmp_space/plots.plt\\""`; 
@@ -709,749 +1030,18 @@ $command = "mv pvalue.pdf $path/$relpath/$direc/spectrum2/multifits/plots/multif
 $command = "mv pvalue.png $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state"."-pv.png";
 `$command`;
 
-
+`epstopdf ./EvanSpectrum/scripts/tmp_space/corr-inc.eps`;
+`pdflatex ./EvanSpectrum/scripts/tmp_space/corr.tex`;
+`convert ./corr.pdf ./corr.png`;
+$command = "mv corr.pdf $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state"."-corr.pdf";
+`$command`;
+$command = "mv corr.png $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state"."-corr.png";
+`$command`;
 
 `rm *.aux`;
 `rm *.log`;
 
 close($outfile3);
-
-return;
-
-my $ensemble = $ARGV[0];
-my $state = $ARGV[1];
-my @ens_splitted = split('t', $ensemble);
-my @ens_splitted2 = split('b', $ens_splitted[@ens_splitted-1]);
-my $nt = $ens_splitted2[0];
-chomp($nt);
-my $tmin_min = 0;
-my $tmin_pref = 0;
-my $tmin_max = 0;
-my $tmax_fit = 0;
-
-if (@ARGV == 2) # look for a fitparams file.
-{
-	if (-f "$path/$ensemble/spectrum2/fitparams/fitparam.$state")
-	{
-		open(my $fit_handle, "<$path/$ensemble/spectrum2/fitparams/fitparam.$state");
-		my @fit_lines = <$fit_handle>;
-		# Grab +/- 1 around the preferred value.
-		my @splitted_values = split(' ', $fit_lines[0]);
-		$tmin_pref = $splitted_values[1];
-		$tmin_min = $tmin_pref-1;
-		$tmin_max = $tmin_pref+1;
-		$tmax_fit = $splitted_values[3];
-		close($fit_handle);
-	}
-	else
-	{
-		die "No t ranges were specified and a fitparams file doesn't exist!\n";
-	}
-}
-else
-{
-	$tmin_min = $ARGV[2];
-	$tmin_pref = $ARGV[3];
-	$tmin_max = $ARGV[4];
-	$tmax_fit = $ARGV[5];
-}
-
-my $tmax_nontriv = 0;
-if ($tmax_fit != $nt/2) # If t_max on the fit isn't the center of the lattice, we put an extra dashed line in.
-{
-	$tmax_nontriv = 1; 
-}
-
-
-
-# First, build a table of fit results. This also builds us up an array of masses and whatnot.
-# Load the right file.
-
-open(my $infile, "<$path/$ensemble/spectrum2/fits/fit_new.".$state);
-my @inlines = <$infile>;
-close($infile);
-
-# Split and iterate through each line, building some tex!
-
-my @textlines = ();
-
-my @tmins = ();
-my @mass_1s = ();
-my @mass_1_errs = ();
-my @mass_2s = (); # Gets hijacked for f_pi if need be.
-my @mass_2_errs = ();
-my @pvals = ();
-my @amp_1s = ();
-my @amp_2s = ();
-
-my $fpi_exists = 0;
-my $oscil_exists = 0;
-
-foreach my $line (@inlines)
-{
-	my @splitted = split(' ', $line);
-	
-	my $tmin = $splitted[0];
-	my $tmax = $splitted[1];
-	
-	my $amp1 = $splitted[2];
-	my $amp1err = $splitted[3];
-	my $mass1 = $splitted[4];
-	my $mass1err = $splitted[5];
-	my $amp2 = $splitted[6];
-	my $amp2err = $splitted[7];
-	my $mass2 = $splitted[8];
-	my $mass2err = $splitted[9];
-	
-	my $amp3 = $splitted[10];
-	my $amp3err = $splitted[11];
-	my $mass3 = $splitted[12];
-	my $mass3err = $splitted[13];
-	my $amp4 = $splitted[14];
-	my $amp4err = $splitted[15];
-	my $mass5 = $splitted[16];
-	my $mass5err = $splitted[17];
-	
-	my $chisqdof = $splitted[18];
-	my $pval = $splitted[19];
-	my $condnum = $splitted[20];
-	
-	my $fpi = 0; # If we have it!
-	my $fpierr = 0; # If we have it!
-	if (@splitted == 23)
-	{
-		$fpi = $splitted[21];
-		$fpierr = $splitted[22];
-	}
-
-	# If the error is zero, the fit failed, either in the central value or the error.
-	if (abs($mass1err) < 1e-10)
-	{
-		next;
-	}
-
-	
-	push(@tmins, $tmin);
-	push(@mass_1s, $mass1);
-	push(@mass_1_errs, $mass1err);
-	push(@amp_1s, $amp1);
-	
-	# If there's an fpi, hijack it into mass2!
-
-	if (@splitted == 23)
-	{
-		push(@mass_2s, $fpi);
-		push(@mass_2_errs, $fpierr);
-		$fpi_exists = 1;
-	}
-	else
-	{
-		push(@mass_2s, $mass3);
-		push(@mass_2_errs, $mass3err);
-		push(@amp_2s, $amp3);
-	}
-	
-	if ($fpi_exists == 0 && abs($amp3) > 1e-10)
-	{
-		$oscil_exists = 1;
-	}
-	
-	push(@pvals, $pval);
-	
-
-	# Get parenthetical forms of the errors.
-	
-	my $amp1par = "";
-	my $mass1par = "";
-	my $amp2par = ""; # Gets hijacked into fpi.
-	my $mass2par = "";
-	
-	if ($fpi_exists == 0)
-	{
-		$amp1par = parenForm($amp1, $amp1err);
-		$mass1par = parenForm($mass1, $mass1err);
-		if ($oscil_exists == 1)
-		{
-			$amp2par = parenForm($amp3, $amp3err);
-			$mass2par = parenForm($mass3, $mass3err);
-		}
-	}
-	else
-	{
-		$amp1par = parenForm($amp1, $amp1err);
-		$mass1par = parenForm($mass1, $mass1err);
-		$amp2par = parenForm($fpi, $fpierr);
-	}
-	
-	my $a_line = "";
-	
-	if ($tmin == $tmin_pref) # Bold our preferred value.
-	{
-               if ($oscil_exists == 1) # cosh+oscil.
-                {
-                        $a_line = sprintf("\\textbf{%i} & \$$amp1par\$ & \$$mass1par\$ & \$$amp2par\$ & \$$mass2par\$ & %.2f  \\\\", $tmin, $pval);
-                }
-                elsif ($fpi_exists == 1) # also need to print f_pi.
-                {
-                        $a_line = sprintf("\\textbf{%i} & \$$amp1par\$ & \$$mass1par\$ & \$$amp2par\$ & %.2f  \\\\", $tmin, $pval);
-                }
-                else # Just a cosh.
-                {
-                        $a_line = sprintf("\\textbf{%i} & \$$amp1par\$ & \$$mass1par\$ & %.2f  \\\\", $tmin, $pval);
-                }
-
-	}
-	else
-	{
-		if ($oscil_exists == 1) # cosh+oscil.
-		{
-			$a_line = sprintf("%i & \$$amp1par\$ & \$$mass1par\$ & \$$amp2par\$ & \$$mass2par\$ & %.2f  \\\\", $tmin, $pval);
-		}
-		elsif ($fpi_exists == 1) # also need to print f_pi.
-		{
-			$a_line = sprintf("%i & \$$amp1par\$ & \$$mass1par\$ & \$$amp2par\$ & %.2f  \\\\", $tmin, $pval);
-		}
-		else # Just a cosh.
-		{
-			$a_line = sprintf("%i & \$$amp1par\$ & \$$mass1par\$ & %.2f  \\\\", $tmin, $pval);
-		}
-	}
-	
-	push(@textlines, $a_line);
-
-}
-
-
-open (my $outfile, ">$path/$ensemble/spectrum2/tex/table_new.".$ARGV[1]);
-foreach my $line (@textlines)
-{
-	print $outfile $line."\n\\hline\n";
-}
-close($outfile);
-
-
-# Next, get central values.
-
-my $mass1_mean = 0;
-my $mass2_mean = 0; # fpi goes here, too, for ps2 correlator.
-my $mass1_weight = 0;
-my $mass2_weight = 0;
-my $mass1_err = 0;
-my $mass2_err = 0;
-my $mass1_max = 0;
-my $mass1_min = 1000;
-my $mass2_max = 0;
-my $mass2_min = 1000;
-my $mass1_center = 0;
-my $mass2_center = 0;
-my $mass1_center_err = 0;
-my $mass2_center_err = 0;
-my $mass1_sys_err = 0;
-my $mass2_sys_err = 0;
-my $amp1_center = 0;
-my $amp2_center = 0;
-my $mass_pval = 0;
-my $count = 0;
-
-for (my $i = 0; $i < @tmins; $i++)
-{
-	# Make sure we don't accidentally get weird rounding on the t value.
-	$tmins[$i] = floor($tmins[$i]+0.5);
-	if ($tmins[$i] >= $tmin_min && $tmins[$i] <= $tmin_max)
-	{
-		$mass1_mean += $mass_1s[$i]/($mass_1_errs[$i]**2);
-		$mass1_weight += 1.0/($mass_1_errs[$i]**2);
-		$mass1_err += $mass_1_errs[$i];
-		$count++;
-		if ($mass1_max < $mass_1s[$i])
-		{
-			$mass1_max = $mass_1s[$i];
-		}
-		if ($mass1_min > $mass_1s[$i])
-		{
-			$mass1_min = $mass_1s[$i];
-		}
-		
-		if ($tmins[$i] == $tmin_pref)
-		{
-			$mass1_center = $mass_1s[$i];
-			$mass1_center_err = $mass_1_errs[$i];
-			$mass_pval = $pvals[$i];
-			$amp1_center = $amp_1s[$i];
-		}
-		
-		if ($fpi_exists == 1 || $oscil_exists == 1)
-		{
-			$mass2_mean += $mass_2s[$i]/($mass_2_errs[$i]**2);
-			$mass2_weight += 1.0/($mass_2_errs[$i]**2);
-			$mass2_err += $mass_2_errs[$i];
-			if ($mass2_max < $mass_2s[$i])
-			{
-				$mass2_max = $mass_2s[$i];
-			}
-			if ($mass2_min > $mass_2s[$i])
-			{
-				$mass2_min = $mass_2s[$i];
-			}
-			
-			if ($tmins[$i] == $tmin_pref)
-			{
-				$mass2_center = $mass_2s[$i];
-				$mass2_center_err = $mass_2_errs[$i];
-				if ($fpi_exists == 0)
-				{
-					$amp2_center = $amp_2s[$i];
-				}
-			}
-		}
-	}
-}
-
-$mass1_mean /= $mass1_weight;
-$mass1_err /= $count;
-
-$mass1_max = abs($mass1_max - $mass1_mean);
-$mass1_min = abs($mass1_mean - $mass1_min);
-$mass1_sys_err = ($mass1_max > $mass1_min) ? $mass1_max : $mass1_min;
-
-if ($fpi_exists == 1 || $oscil_exists == 1)
-{
-	$mass2_mean /= $mass2_weight;
-	$mass2_err /= $count;
-
-	$mass2_max = abs($mass2_max - $mass2_mean);
-	$mass2_min = abs($mass2_mean - $mass2_min);
-	$mass2_sys_err = ($mass2_max > $mass2_min) ? $mass2_max : $mass2_min;
-}
-
-# Print some errors!
-print "Avg Mass1 value: ".(parenFormTwo($mass1_mean, $mass1_err, $mass1_sys_err))."\n";
-print "Cen Mass1 value: ".(parenForm($mass1_center, $mass1_center_err))."\n";
-
-if ($fpi_exists == 1 || $oscil_exists == 1)
-{
-	print "Avg Mass2 value: ".(parenFormTwo($mass2_mean, $mass2_err, $mass2_sys_err))."\n";
-	print "Cen Mass2 value: ".(parenForm($mass2_center, $mass2_center_err))."\n";
-}
-
-$mass_pval = sprintf("%.2f", $mass_pval);
-
-open (my $an_outfile, ">$path/$ensemble/spectrum2/tex/central_new.".$ARGV[1]);
-if ($fpi_exists == 1 || $oscil_exists == 1)
-{
-	my $output_str = $tmin_min." to ".$tmin_max." & ".(parenFormTwo($mass1_mean, $mass1_err, $mass1_sys_err))." & ".(parenFormTwo($mass2_mean, $mass2_err, $mass2_sys_err))." & ".($tmin_pref)." & ".(parenForm($mass1_center, $mass1_center_err))." & ".(parenForm($mass2_center, $mass2_center_err))." & $mass_pval\n";
-	print $an_outfile $output_str;
-}
-else
-{
-	print $an_outfile "$tmin_min to $tmin_max & ".(parenFormTwo($mass1_mean, $mass1_err, $mass1_sys_err))." & ".($tmin_pref)." & ".(parenForm($mass1_center, $mass1_center_err))." & $mass_pval\n";
-}
-close($an_outfile);
-
-# Spit out some values the big table script can use.
-
-open($an_outfile, ">$path/$ensemble/spectrum2/central/central_new.".$ARGV[1]);
-if ($fpi_exists == 1 || $oscil_exists == 1)
-{
-	print $an_outfile "$mass1_center $mass1_center_err\n";
-	print $an_outfile "$mass2_center $mass2_center_err\n";
-}
-else
-{
-	print $an_outfile "$mass1_center $mass1_center_err\n";
-}
-close($an_outfile);
-
-# Now create an effective mass plot. This is new!
-
-# First, grab the effective mass files and put them locally.
-
-$command = "cp $path/$ensemble/spectrum2/effmass/effmass.$state"."* ./EvanSpectrum/scripts/tmp_space";
-#print $command."\n";
-`$command`;
-
-
-
-open(my $outfile3, ">EvanSpectrum/scripts/tmp_space/plots.plt");
-print $outfile3 "set style line 1 lt 1 lc rgb '#0000FF' pt 6 ps 1.5\n";
-print $outfile3 "set style line 2 lt 1 lc rgb '#D70A52' pt 8 ps 1.5\n";
-print $outfile3 "set style line 3 lt 1 lc rgb '#228B22' pt 4 ps 1.5\n";
-print $outfile3 "set style line 4 lt 2 lc rgb 'black' lw 3 ps 1.5\n";
-print $outfile3 "set style line 5 lt 1 lc rgb '#00008B' lw 3 pt 6 ps 1.5\n";
-print $outfile3 "set style line 6 lt 1 lc rgb 'black' lw 4 ps 1.5\n";
-print $outfile3 "set style line 7 lt 1 lc rgb '#228B22' lw 2 pt 6 ps 1.5\n";
-print $outfile3 "set style line 8 lt 1 lc rgb '#DAA520' lw 2 pt 8 ps 1.5\n";
-print $outfile3 "set style line 9 lt 1 lc rgb '#77EB77' lw 2 pt 6 ps 1.5\n";
-print $outfile3 "set style line 10 lt 1 lc rgb '#FCCF70' lw 2 pt 8 ps 1.5\n";
-
-
-# Effective Mass
-
-# We have a new ymin/ymax---it's the preferred central value +/- 5 standard errors. We make one plot for each state.
-
-print $outfile3 "set xlabel \"\$t\$\"\n";
-print $outfile3 "set ylabel \"Time-dependent Mass\"\n";
-print $outfile3 "set xrange [-0.4:".($nt/2+0.4)."]\n";
-print $outfile3 "set yrange [0:1]\n";
-#print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",0 to ".($tmin_pref-0.5).",1 nohead ls 4\n";
-#print $outfile3 "set arrow 2 from ".($minimum_incl-0.5).",0.8 to ".($minimum_incl-0.5+4).",0.8 ls 6\n";
-
-print $outfile3 "set terminal epslatex color standalone\n";
-print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/effmass1.tex\"\n";
-
-my $sm = 20;
-
-# Oscillating state, if it exists.
-if ($oscil_exists == 1)
-{
-	print $outfile3 "set yrange [".($mass1_center-$sm*$mass1_center_err).":".($mass1_center+$sm*$mass1_center_err)."]\n";
-	print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmin_pref-0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	if ($tmax_nontriv == 1)
-	{
-		print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmax_fit+0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	}
-	print $outfile3 "plot ".($mass1_center+$mass1_center_err)." ls 9 notitle, ".($mass1_center-$mass1_center_err)." ls 9 notitle, $mass1_center ls 7 title \"Cosh Non-linear Fit Mass\", \\\n";
-	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/effmass.$state"."2\" using 1:2:3 with yerrorbars ls 1 title \"Cosh Effective Mass\"\n";
-
-	print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/effmass2.tex\"\n";
-	print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass2_center-$sm*$mass2_center_err)." to ".($tmin_pref-0.5).",".($mass2_center+$sm*$mass2_center_err)." nohead ls 4\n";
-	if ($tmax_nontriv == 1)
-	{
-		print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass2_center-$sm*$mass2_center_err)." to ".($tmax_fit+0.5).",".($mass2_center+$sm*$mass2_center_err)." nohead ls 4\n";
-	}
-	print $outfile3 "set yrange [".($mass2_center-$sm*$mass2_center_err).":".($mass2_center+$sm*$mass2_center_err)."]\n";
-	print $outfile3 "plot ".($mass2_center+$mass2_center_err)." ls 10 notitle, ".($mass2_center-$mass2_center_err)." ls 10 notitle, $mass2_center ls 8 title \"Oscil Non-linear Fit Mass\", \\\n";
-	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/effmass.$state"."1\" using 1:2:3 with yerrorbars ls 2 title \"Oscil Effective Mass\"\n";
-}
-else # Non-oscil
-{
-	print $outfile3 "set yrange [".($mass1_center-$sm*$mass1_center_err).":".($mass1_center+$sm*$mass1_center_err)."]\n";
-	print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmin_pref-0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	if ($tmax_nontriv == 1)
-	{
-		print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmax_fit+0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	}
-	print $outfile3 "plot ".($mass1_center+$mass1_center_err)." ls 9 notitle, ".($mass1_center-$mass1_center_err)." ls 9 notitle, $mass1_center ls 7 title \"Cosh Non-linear Fit Mass\", \\\n";
-	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/effmass.$state"."1\" using 1:2:3 with yerrorbars ls 1 title \"Cosh Effective Mass\"\n";
-}
-print $outfile3 "set output\n";
-#print $outfile3 "set terminal x11\n";
-
-close($outfile3);
-
-`gnuplot -e "load \\"EvanSpectrum/scripts/tmp_space/plots.plt\\""`; 
-#`cd ./EvanSpectrum/scripts/tmp_space`;
-`epstopdf ./EvanSpectrum/scripts/tmp_space/effmass1-inc.eps`;
-`pdflatex ./EvanSpectrum/scripts/tmp_space/effmass1.tex`;
-`convert ./effmass1.pdf ./effmass1.png`;
-if ($oscil_exists == 1)
-{
-	`epstopdf ./EvanSpectrum/scripts/tmp_space/effmass2-inc.eps`;
-	`pdflatex ./EvanSpectrum/scripts/tmp_space/effmass2.tex`;
-	`convert ./effmass2.pdf ./effmass2.png`;
-}
-#`cd ..`;
-
-$command = "mv effmass1.pdf $path/$ensemble/spectrum2/effmass/plots/effmass-$state"."1.pdf";
-`$command`;
-$command = "mv effmass1.png $path/$ensemble/spectrum2/effmass/plots/effmass-$state"."1.png";
-`$command`;
-
-if ($oscil_exists == 1)
-{
-	$command = "mv effmass2.pdf $path/$ensemble/spectrum2/effmass/plots/effmass-$state"."2.pdf";
-	`$command`;
-	$command = "mv effmass2.png $path/$ensemble/spectrum2/effmass/plots/effmass-$state"."2.png";
-	`$command`;
-}
-
-`rm *.aux`;
-`rm *.log`;
-`rm ./EvanSpectrum/scripts/tmp_space/*`;
-
-#Now create a fit mass plot. This is new!
-
-
-$command = "cp $path/$ensemble/spectrum2/fits/fit.$state"."* ./EvanSpectrum/scripts/tmp_space";
-#print $command."\n";
-`$command`;
-
-
-
-open($outfile3, ">EvanSpectrum/scripts/tmp_space/plots.plt");
-print $outfile3 "set style line 1 lt 1 lc rgb '#0000FF' pt 6 ps 1.5\n";
-print $outfile3 "set style line 2 lt 1 lc rgb '#D70A52' pt 8 ps 1.5\n";
-print $outfile3 "set style line 3 lt 1 lc rgb '#228B22' pt 4 ps 1.5\n";
-print $outfile3 "set style line 4 lt 2 lc rgb 'black' lw 3 ps 1.5\n";
-print $outfile3 "set style line 5 lt 1 lc rgb '#00008B' lw 3 pt 6 ps 1.5\n";
-print $outfile3 "set style line 6 lt 1 lc rgb 'black' lw 4 ps 1.5\n";
-print $outfile3 "set style line 7 lt 1 lc rgb '#228B22' lw 2 pt 6 ps 1.5\n";
-print $outfile3 "set style line 8 lt 1 lc rgb '#DAA520' lw 2 pt 8 ps 1.5\n";
-print $outfile3 "set style line 9 lt 1 lc rgb '#77EB77' lw 2 pt 6 ps 1.5\n";
-print $outfile3 "set style line 10 lt 1 lc rgb '#FCCF70' lw 2 pt 8 ps 1.5\n";
-
-
-# Effective Mass
-
-# We have a new ymin/ymax---it's the preferred central value +/- 5 standard errors. We make one plot for each state.
-
-print $outfile3 "set xlabel \"\$t_{min}\$\"\n";
-print $outfile3 "set ylabel \"Non-Linear Fit Mass\"\n";
-print $outfile3 "set xrange [-0.4:".($nt/2+0.4)."]\n";
-print $outfile3 "set yrange [0:1]\n";
-#print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",0 to ".($tmin_pref-0.5).",1 nohead ls 4\n";
-#print $outfile3 "set arrow 2 from ".($minimum_incl-0.5).",0.8 to ".($minimum_incl-0.5+4).",0.8 ls 6\n";
-
-print $outfile3 "set terminal epslatex color standalone\n";
-print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/effmass1.tex\"\n";
-
-# Oscillating state, if it exists.
-if ($oscil_exists == 1)
-{
-	print $outfile3 "set yrange [".($mass1_center-$sm*$mass1_center_err).":".($mass1_center+$sm*$mass1_center_err)."]\n";
-	print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmin_pref-0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	if ($tmax_nontriv == 1)
-	{
-		print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmax_fit+0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	}
-	print $outfile3 "plot ".($mass1_center+$mass1_center_err)." ls 9 notitle, ".($mass1_center-$mass1_center_err)." ls 9 notitle, $mass1_center ls 7 title \"Preferred Cosh Non-linear Fit Mass\", \\\n";
-	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/fit.$state"."1\" using 1:2:3 with yerrorbars ls 1 title \"Cosh Non-Linear Fit Mass\"\n";
-
-	print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/effmass2.tex\"\n";
-	print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass2_center-$sm*$mass2_center_err)." to ".($tmin_pref-0.5).",".($mass2_center+$sm*$mass2_center_err)." nohead ls 4\n";
-	if ($tmax_nontriv == 1)
-	{
-		print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass2_center-$sm*$mass2_center_err)." to ".($tmax_fit+0.5).",".($mass2_center+$sm*$mass2_center_err)." nohead ls 4\n";
-	}
-	print $outfile3 "set yrange [".($mass2_center-$sm*$mass2_center_err).":".($mass2_center+$sm*$mass2_center_err)."]\n";
-	print $outfile3 "plot ".($mass2_center+$mass2_center_err)." ls 10 notitle, ".($mass2_center-$mass2_center_err)." ls 10 notitle, $mass2_center ls 8 title \"Preferred Oscil Non-linear Fit Mass\", \\\n";
-	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/fit.$state"."2\" using 1:2:3 with yerrorbars ls 2 title \"Oscil Non-Linear Fit Mass\"\n";
-}
-elsif ($fpi_exists)
-{
-	print $outfile3 "set yrange [".($mass1_center-$sm*$mass1_center_err).":".($mass1_center+$sm*$mass1_center_err)."]\n";
-        print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmin_pref-0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-        if ($tmax_nontriv == 1)
-		{
-			print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmax_fit+0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-		}
-		print $outfile3 "plot ".($mass1_center+$mass1_center_err)." ls 9 notitle, ".($mass1_center-$mass1_center_err)." ls 9 notitle, $mass1_center ls 7 title \"Preferred Cosh Non-linear Fit Mass\", \\\n";
-        print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/fit.$state"."1\" using 1:2:3 with yerrorbars ls 1 title \"Cosh Non-Linear Fit Mass\"\n";
-
-	print $outfile3 "set ylabel \"Non-Linear Fit \$f_{\\\\pi}\$\"\n";
-        print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/effmass2.tex\"\n";
-        print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass2_center-$sm*$mass2_center_err)." to ".($tmin_pref-0.5).",".($mass2_center+$sm*$mass2_center_err)." nohead ls 4\n";
-		if ($tmax_nontriv == 1)
-		{
-			print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass2_center-$sm*$mass2_center_err)." to ".($tmax_fit+0.5).",".($mass2_center+$sm*$mass2_center_err)." nohead ls 4\n";
-		}
-        print $outfile3 "set yrange [".($mass2_center-$sm*$mass2_center_err).":".($mass2_center+$sm*$mass2_center_err)."]\n";
-        print $outfile3 "plot ".($mass2_center+$mass2_center_err)." ls 10 notitle, ".($mass2_center-$mass2_center_err)." ls 10 notitle, $mass2_center ls 8 title \"Preferred \$f_{\\\\pi}\$ Non-linear Fit Value\", \\\n";
-        print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/fit.$state"."2\" using 1:2:3 with yerrorbars ls 2 title \"\$f_{\\\\pi}\$ Non-Linear Fit Value\"\n";
-
-}
-else # Non-oscil
-{
-	print $outfile3 "set yrange [".($mass1_center-$sm*$mass1_center_err).":".($mass1_center+$sm*$mass1_center_err)."]\n";
-	print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmin_pref-0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	if ($tmax_nontriv == 1)
-	{
-		print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".($mass1_center-$sm*$mass1_center_err)." to ".($tmax_fit+0.5).",".($mass1_center+$sm*$mass1_center_err)." nohead ls 4\n";
-	}
-	print $outfile3 "plot ".($mass1_center+$mass1_center_err)." ls 9 notitle, ".($mass1_center-$mass1_center_err)." ls 9 notitle, $mass1_center ls 7 title \"Preferred Cosh Non-linear Fit Mass\", \\\n";
-	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/fit.$state"."1\" using 1:2:3 with yerrorbars ls 1 title \"Cosh Non-Linear Fit Mass\"\n";
-}
-print $outfile3 "set output\n";
-#print $outfile3 "set terminal x11\n";
-
-close($outfile3);
-
-`gnuplot -e "load \\"EvanSpectrum/scripts/tmp_space/plots.plt\\""`; 
-#`cd ./EvanSpectrum/scripts/tmp_space`;
-`epstopdf ./EvanSpectrum/scripts/tmp_space/effmass1-inc.eps`;
-`pdflatex ./EvanSpectrum/scripts/tmp_space/effmass1.tex`;
-`convert ./effmass1.pdf ./effmass1.png`;
-if ($oscil_exists == 1 || $fpi_exists == 1)
-{
-	`epstopdf ./EvanSpectrum/scripts/tmp_space/effmass2-inc.eps`;
-	`pdflatex ./EvanSpectrum/scripts/tmp_space/effmass2.tex`;
-	`convert ./effmass2.pdf ./effmass2.png`;
-}
-#`cd ..`;
-
-$command = "mv effmass1.pdf $path/$ensemble/spectrum2/fits/plots/fit-$state"."1.pdf";
-`$command`;
-$command = "mv effmass1.png $path/$ensemble/spectrum2/fits/plots/fit-$state"."1.png";
-`$command`;
-
-if ($oscil_exists == 1 || $fpi_exists == 1)
-{
-	$command = "mv effmass2.pdf $path/$ensemble/spectrum2/fits/plots/fit-$state"."2.pdf";
-	`$command`;
-	$command = "mv effmass2.png $path/$ensemble/spectrum2/fits/plots/fit-$state"."2.png";
-	`$command`;
-}
-
-`rm *.aux`;
-`rm *.log`;
-`rm ./EvanSpectrum/scripts/tmp_space/*`;
-
-
-# Correlator plot... ehhh...
-# Now just a log plot!
-
-my $tmp_state = $state;
-if ($state eq "dc_stoch_oscil")
-{
-	$state = "dc_stoch";
-}
-
-# First, load the sum file.
-open (my $corr_handle, "<$path/$ensemble/spectrum2/sum/sum.$state");
-my @corr_contents = <$corr_handle>;
-close($corr_handle);
-
-$state = $tmp_state;
-
-# Split things into tmin/tmax/whatnot.
-my @corr_t = ();
-my @corr_val = ();
-my @corr_err = ();
-my $max_corr_val = 0;
-my $min_corr_val = 1e100;
-
-foreach my $corr_line (@corr_contents)
-{
-	my @temp_splitter = split(' ', $corr_line);
-	push(@corr_t, $temp_splitter[0]);
-	push(@corr_val, $temp_splitter[1]);
-	push(@corr_err, $temp_splitter[2]);
-	
-	if (abs($temp_splitter[1])+$temp_splitter[2] > $max_corr_val)
-	{
-		$max_corr_val = abs($temp_splitter[1])+$temp_splitter[2];
-	}
-	
-	if (abs(abs($temp_splitter[1])-$temp_splitter[2]) < $min_corr_val && abs($temp_splitter[1]) > 1e-9)
-	{
-		$min_corr_val = abs(abs($temp_splitter[1])-$temp_splitter[2]);
-	}
-	
-}
-
-
-
-# Write the correlator out to file. Maybe this is redundant now!
-
-open(my $outcorr_handle, ">./EvanSpectrum/scripts/tmp_space/asinhcorr.dat");
-for (my $i = 0; $i < @corr_t; $i++)
-{
-	if ($state eq "sc_stoch") # Because it's all negative
-	{
-		print $outcorr_handle "$corr_t[$i] ".(-1*$corr_val[$i])." $corr_err[$i]\n";
-	}
-	else
-	{
-		print $outcorr_handle "$corr_t[$i] $corr_val[$i] $corr_err[$i]\n";
-	}
-}
-close($outcorr_handle);
-
-# Make a plot of the correlator!
-
-open($outfile3, ">EvanSpectrum/scripts/tmp_space/plots.plt");
-print $outfile3 "set style line 1 lc rgb 'blue' pt 6 ps 1.5\n";
-print $outfile3 "set style line 2 lt 1 lc rgb '#D70A52' lw 3 pt 8 ps 1.5\n";
-print $outfile3 "set style line 3 lt 1 lc rgb '#228B22' pt 4 ps 1.5\n";
-print $outfile3 "set style line 4 lt 2 lc rgb 'black' lw 3 ps 1.5\n";
-print $outfile3 "set style line 5 lt 1 lc rgb '#00008B' lw 3 pt 6 ps 1.5\n";
-print $outfile3 "set style line 6 lt 1 lc rgb 'black' lw 4 ps 1.5\n";
-
-my $maxt = ($nt/2+0.4);
-if ($state eq "nu" || $state eq "de")
-{
-	$maxt = $nt;
-}
-
-# Alrighty. This sucks. We need to plot the asinh form of the fit curve correlator.
-
-# Clean up our cheating with fpi.
-if ($fpi_exists)
-{
-	$mass2_center = 0;
-	$mass2_center_err = 0;
-}
-
-my $curve_line = "";
-
-if ($state eq "nu" || $state eq "de")
-{
-	# Nucleons are special.
-	# Obnoxious, too.
-	$curve_line = $amp1_center."*(exp(-".$mass1_center."*x)-cos(3.1415926535*x)*exp(-".$mass1_center."*(".$nt."-x))) - ".$amp2_center."*cos(3.1415926535*x)*(exp(-".$mass2_center."*x)-cos(3.1415926535*x)*exp(-".$mass2_center."*(".$nt."-x)))";
-}
-elsif ($state eq "sc_stoch")
-{
-	$curve_line = "-".$amp1_center."*cosh(".$mass1_center."*(".$nt."/2-x)) - ".$amp2_center."*cos(3.1415926535*x)*cosh(".$mass2_center."*(".$nt."/2-x))";
-}
-else
-{
-	$curve_line = $amp1_center."*cosh(".$mass1_center."*(".$nt."/2-x)) + ".$amp2_center."*cos(3.1415926535*x)*cosh(".$mass2_center."*(".$nt."/2-x))";
-}
-
-print $outfile3 "set xlabel \"\$t\$\"\n";
-print $outfile3 "set ylabel \"Log Plot of Correlator\"\n";
-print $outfile3 "set xrange [-0.4:".$maxt."]\n";
-print $outfile3 "set log y\n";
-print $outfile3 "set format y \"%2.0e\"\n";
-#print $outfile3 "set format y \"%2.0tx10^{%L}\"\n";
-print $outfile3 "set yrange [".(0.9*$min_corr_val).":".(1.1*$max_corr_val)."]\n";
-#print $outfile3 "set yrange [-".($mass1_mean*30).":".($mass1_mean*30)."]\n";
-print $outfile3 "set samples 1000\n";
-print $outfile3 "set arrow 1 from ".($tmin_pref-0.5).",".(0.9*$min_corr_val)." to ".($tmin_pref-0.5).",".(1.1*$max_corr_val)." nohead ls 4\n";
-if ($state eq "nu" || $state eq "de")
-{
-	print $outfile3 "set arrow 2 from ".($nt-($tmin_pref-0.5)).",".(0.9*$min_corr_val)." to ".($nt-($tmin_pref-0.5)).",".(1.1*$max_corr_val)." nohead ls 4\n";
-}
-if ($state eq "sg_111" || $state eq "sg_211" || $state eq "dc_stoch")
-{
-	print $outfile3 "set arrow 2 from ".($tmax_fit+0.5).",".(0.9*$min_corr_val)." to ".($tmax_fit+0.5).",".(1.1*$max_corr_val)." nohead ls 4\n";
-}
-#print $outfile3 "set arrow 2 from ".($minimum_incl-0.5).",0.8 to ".($minimum_incl-0.5+4).",0.8 ls 6\n";
-
-print $outfile3 "set terminal epslatex color standalone\n";
-print $outfile3 "set output \"./EvanSpectrum/scripts/tmp_space/asinhcorr.tex\"\n";
-#if ($state eq "sc_stoch")
-#{
-#	print $outfile3 "plot \"./EvanSpectrum/scripts/tmp_space/asinhcorr.dat\" using 1:(-\$2):3 with yerrorbars ls 1 notitle, \\\n";
-#}
-#else
-#{
-	print $outfile3 "plot \"./EvanSpectrum/scripts/tmp_space/asinhcorr.dat\" using 1:2:3 with yerrorbars ls 1 notitle, \\\n";
-#}
-print $outfile3 "   $curve_line ls 2 notitle\n";
-print $outfile3 "set output\n";
-#print $outfile3 "set terminal wxt\n";
-
-close($outfile3);
-
-`gnuplot -e "load \\"EvanSpectrum/scripts/tmp_space/plots.plt\\""`; 
-#`cd ./EvanSpectrum/scripts/tmp_space`;
-`epstopdf ./EvanSpectrum/scripts/tmp_space/asinhcorr-inc.eps`;
-`pdflatex ./EvanSpectrum/scripts/tmp_space/asinhcorr.tex`;
-`convert ./asinhcorr.pdf ./asinhcorr.png`;
-
-#`cd ..`;
-
-$command = "mv asinhcorr.pdf $path/$ensemble/spectrum2/sum/plots/sum-$state.pdf";
-`$command`;
-$command = "mv asinhcorr.png $path/$ensemble/spectrum2/sum/plots/sum-$state.png";
-`$command`;
-
-
-`rm *.aux`;
-`rm *.log`;
-`rm ./EvanSpectrum/scripts/tmp_space/*`;
 
 
 sub parenForm
@@ -1465,7 +1055,7 @@ sub parenForm
 		$the_value = -$the_value;
    }
    
-   if (abs($the_value) < 1e-10)
+   if (abs($the_value) < 1e-20)
    {
 	 return "0";
    }
@@ -1504,154 +1094,3 @@ sub parenForm
         #return 0;
 
 }
-
-sub parenFormTwo
-{
-   my ($the_value, $the_error_1, $the_error_2) = @_;
-   
-   my $neg_flag = 1;
-   if ($the_value < 0)
-   {
-		$neg_flag = -1;
-		$the_value = -$the_value;
-   }
-   
-   if (abs($the_value) < 1e-10)
-   {
-	 return "0";
-   }
-   
-   my $the_error = 0;
-   my $other_error = 0;
-   my $error_no = 0;
-   
-   if ($the_error_1 > $the_error_2)
-   {
-		$the_error = $the_error_1;
-		$other_error = $the_error_2;
-		$error_no = 1;
-	}
-	else
-	{
-		$the_error = $the_error_2;
-		$other_error = $the_error_1;
-		$error_no = 2;
-	}
-
-   my $err_size = floor(log($the_error)/log(10));
-   my $other_err_size = floor(log($other_error)/log(10));
-
-   my $value_size = floor(log(abs($the_value))/log(10));
-
-   $the_error *= 10**(-$err_size+1);
-   $other_error *= 10**(-$err_size+1);
-
-        if (floor($the_error + 0.5) == 100) # Special case.
-        {
-                $the_error/=10;
-				$other_error/=10;
-                $err_size--;
-        }
-		
-		if (floor($other_error + 0.5) == 100)
-		{
-			$other_error /= 10;
-			$other_err_size--;
-		}
-	
-	
-
-   $the_value *= 10**(-$err_size+1);
-
-
-   $the_value = floor($the_value + 0.5);
-   $the_error = floor($the_error + 0.5);
-   $other_error = floor($other_error + 0.5);
-   
-   if ($other_error < 10)
-   {
-		$other_error = "0".$other_error;
-	}
-	
-
-   #print $the_value." ".$the_error."\n";
-   
-   if ($error_no == 1)
-   {
-		$the_error_1 = $the_error;
-		$the_error_2 = $other_error;
-   }
-   else
-   {
-		$the_error_2 = $the_error;
-		$the_error_1 = $other_error;
-	}
-
-   if ($neg_flag == -1)
-   {
-		return '-'.substr($the_value, 0, 1).".".substr($the_value, 1)."(".$the_error_1.")(".$the_error_2.")\\mbox{e".$value_size.'} ';
-	}
-	else
-	{
-		return ''.substr($the_value, 0, 1).".".substr($the_value, 1)."(".$the_error_1.")(".$the_error_2.")\\mbox{e".$value_size.'} ';
-	}
-   
-
-
-        #return 0;
-
-}
-
-sub parenFormFake
-{
-   my ($the_value) = @_;
-   
-   my $neg_flag = 1;
-   if ($the_value < 0)
-   {
-		$neg_flag = -1;
-		$the_value = -$the_value;
-   }
-   
-   if (abs($the_value) < 1e-10)
-   {
-	 return "0";
-   }
-   
-   my $the_error = $the_value/100;
-
-   my $err_size = floor(log($the_error)/log(10));
-
-   my $value_size = floor(log(abs($the_value))/log(10));
-
-   $the_error *= 10**(-$err_size+1);
-
-        if (floor($the_error + 0.5) == 100) # Special case.
-        {
-                $the_error/=10;
-                $err_size--;
-        }
-
-   $the_value *= 10**(-$err_size+1);
-   
-
-   $the_value = floor($the_value + 0.5);
-   $the_error = floor($the_error + 0.5);
-
-   #print $the_value." ".$the_error."\n";
-
-   if ($neg_flag == -1)
-   {
-		return '-'.substr($the_value, 0, 1).".".substr($the_value, 1)."\\mbox{e".$value_size.'} ';
-	}
-	else
-	{
-		return ''.substr($the_value, 0, 1).".".substr($the_value, 1)."\\mbox{e".$value_size.'} ';
-	}
-   
-
-
-        #return 0;
-
-}
-
