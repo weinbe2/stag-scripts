@@ -864,8 +864,10 @@ function visual_fit(blockval, num_elim)
 						coefficients_rep = repmat(coefficients', [num_blocks 1]);
 						errors = sqrt(sum((coefficients_blocks - coefficients_rep).^2,1).*(num_blocks-1)./num_blocks);
 						
-						auxresult_rep = repmat(auxresult, [num_blocks 1]);
-						auxerrors = sqrt(sum((auxresult_blocks - auxresult_rep).^2,1).*(num_blocks-1)./num_blocks);
+						if (is_fpi == 1)
+							auxresult_rep = repmat(auxresult, [num_blocks 1]);
+							auxerrors = sqrt(sum((auxresult_blocks - auxresult_rep).^2,1).*(num_blocks-1)./num_blocks);
+						end
 						
 					else % it failed
 						errors = zeros(1,12);
