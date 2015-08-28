@@ -179,11 +179,21 @@
 	
 	% Build up aux strings.
 	if (is_fpi == 1)
-		astr{1} = strcat(['F_pi: ' num2str(auxresult(1))]);
-		astr{2} = strcat(['No auxiliary param 2.']);
-		for param_num = 1:2
-			if (auxerrors(param_num) ~= 0)
-				astr{param_num} = strcat([astr{param_num} ' (' num2str(auxerrors(param_num)) ')']);
+		if (strcmp(spectrum_list{spectrum_answer}, 'ps2') || strcmp(spectrum_list{spectrum_answer}, 'pll') || strcmp(spectrum_list{spectrum_answer}, 'plc'))
+			astr{1} = strcat(['F_pi: ' num2str(auxresult(1))]);
+			astr{2} = strcat(['No auxiliary param 2.']);
+			for param_num = 1:2
+				if (auxerrors(param_num) ~= 0)
+					astr{param_num} = strcat([astr{param_num} ' (' num2str(auxerrors(param_num)) ')']);
+				end
+			end
+		elseif (strcmp(spectrum_list{spectrum_answer}, 'rcc'))
+			astr{1} = strcat(['F_V: ' num2str(auxresult(1))]);
+			astr{2} = strcat(['No auxiliary param 2.']);
+			for param_num = 1:2
+				if (auxerrors(param_num) ~= 0)
+					astr{param_num} = strcat([astr{param_num} ' (' num2str(auxerrors(param_num)) ')']);
+				end
 			end
 		end
 	else % no aux string.

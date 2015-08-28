@@ -194,8 +194,8 @@ function visual_fit(blockval, num_elim)
 		is_sinh = 0;
 	end
 	
-	% See if we want f_pi.
-	if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll'))
+	% See if we want f_pi, or another f.
+	if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll') || strcmp(spectrum_text, 'plc') || strcmp(spectrum_text, 'rcc'))
 		is_fpi = 1;
 	else
 		is_fpi = 0;
@@ -778,6 +778,10 @@ function visual_fit(blockval, num_elim)
 							auxresult(1,1) = 2*m_l*sqrt(coefficients(1)*cosh(parse_Nt*coefficients(2)/2)*((parse_Ns)^3)*3/(4*(coefficients(2)^3))); % f_pi
 						elseif (strcmp(spectrum_text, 'pll'))
 							auxresult(1,1) = 2*m_l*sqrt(coefficients(1)*cosh(parse_Nt*coefficients(2)/2)*((parse_Ns)^3)/(4*(coefficients(2)^3))); % f_pi
+						elseif (strcmp(spectrum_text, 'plc'))
+							auxresult(1,1) = sqrt(coefficients(1)*((parse_Ns)^3)*m_l*sinh(coefficients(2)*parse_Nt/2)/(4*(coefficients(2)^2)*cosh(coefficients(2)/2))); % f_pi
+						elseif (strcmp(spectrum_text, 'rcc')) % F_v
+							auxresult(1,1) = sqrt(coefficients(1)*(parse_Ns^3)*cosh(coefficients(2)*parse_Nt/2)/(16*coefficients(2)));
 						end
 					end
 					
@@ -852,6 +856,10 @@ function visual_fit(blockval, num_elim)
 									auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)*3/(4*(coefficients_blocks(b,2)^3))); % f_pi
 								elseif (strcmp(spectrum_text, 'pll'))
 									auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)/(4*(coefficients_blocks(b,2)^3))); % f_pi
+								elseif (strcmp(spectrum_text, 'plc'))
+									auxresult_blocks(b,1) = sqrt(coefficients_blocks(b,1)*((parse_Ns)^3)*m_l*sinh(coefficients_blocks(b,2)*parse_Nt/2)/(4*(coefficients_blocks(b,2)^2)*cosh(coefficients_blocks(b,2)/2))); % f_pi
+								elseif (strcmp(spectrum_text, 'rcc')) % F_v
+									auxresult_blocks(b,1) = sqrt(coefficients_blocks(b,1)*(parse_Ns^3)*cosh(coefficients_blocks(b,2)*parse_Nt/2)/(16*coefficients_blocks(b,2)));
 								end
 							end
                             
@@ -1034,7 +1042,7 @@ function visual_fit(blockval, num_elim)
 					end
 					
 					% See if we want f_pi.
-					if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll'))
+					if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll') || strcmp(spectrum_text, 'plc') || strcmp(spectrum_text, 'rcc'))
 						is_fpi = 1;
 					else
 						is_fpi = 0;
@@ -1114,7 +1122,7 @@ function visual_fit(blockval, num_elim)
 					end
 					
 					% See if we want f_pi.
-					if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll'))
+					if (strcmp(spectrum_text, 'ps2') || strcmp(spectrum_text, 'pll') || strcmp(spectrum_text, 'plc') || strcmp(spectrum_text, 'rcc'))
 						is_fpi = 1;
 					else
 						is_fpi = 0;
@@ -1220,6 +1228,10 @@ function visual_fit(blockval, num_elim)
 										auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)*3/(4*(coefficients_blocks(b,2)^3))); % f_pi
 									elseif (strcmp(spectrum_text, 'pll'))
 										auxresult_blocks(b,1) = 2*m_l*sqrt(coefficients_blocks(b,1)*cosh(parse_Nt*coefficients_blocks(b,2)/2)*((parse_Ns)^3)/(4*(coefficients_blocks(b,2)^3))); % f_pi
+									elseif (strcmp(spectrum_text, 'plc'))
+										auxresult_blocks(b,1) = sqrt(coefficients_blocks(b,1)*((parse_Ns)^3)*m_l*sinh(coefficients_blocks(b,2)*parse_Nt/2)/(4*(coefficients_blocks(b,2)^2)*cosh(coefficients_blocks(b,2)/2))); % f_pi
+									elseif (strcmp(spectrum_text, 'rcc')) % F_v
+										auxresult_blocks(b,1) = sqrt(coefficients_blocks(b,1)*(parse_Ns^3)*cosh(coefficients_blocks(b,2)*parse_Nt/2)/(16*coefficients_blocks(b,2)));
 									end
 								end
 								
