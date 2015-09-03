@@ -1,0 +1,208 @@
+\documentclass[pdftex,letterpaper,10pt]{article}
+\usepackage[pdftex]{color, graphicx}
+\usepackage{verbatim,amsmath, amssymb, booktabs}
+\usepackage{listings}
+\usepackage{multirow} 
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{pbox}
+%\usepackage{scrextend}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[font=footnotesize,labelfont=bf,labelsep=period]{caption}
+\usepackage[colorlinks=true, linkcolor=blue, filecolor=blue, urlcolor=blue, citecolor=blue, pdftex=true, plainpages=false]{hyperref}
+%\usepackage{subcaption}
+\usepackage{comment}
+\usepackage{natbibspacing}
+\setlength{\bibspacing}{0\baselineskip}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+
+
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{lightred}{rgb}{1.0,0.24,0.24}
+\definecolor{darkred}{rgb}{0.5,0.0,0.0}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{darkgreen}{rgb}{0.0,0.39,0.0}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+\definecolor{purple}{rgb}{0.5,0.0,0.4}
+\newcommand{\green}[1]{\textcolor{darkgreen}{#1}}
+\newcommand{\purple}[1]{\textcolor{purple}{#1}}
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\setcounter{secnumdepth}{5}
+
+\lstdefinestyle{XML}{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray}\upshape,
+  keywordstyle=\color{cyan},
+  stringstyle=\color{black},
+  identifierstyle=\color{darkblue},
+  frame=single,
+  numbers=left,
+  linewidth = 0.8\textwidth,
+  xleftmargin = 0.1\textwidth
+}
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  morekeywords={xmlns,version,type,Name},% list your attributes here
+  morecomment=[s]{!--}{--}
+}
+
+\lstdefinestyle{C++}{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray}\upshape,
+  keywordstyle=\color{lightred}\bf,
+  stringstyle=\color{black},
+  identifierstyle=\color{darkred},
+  frame=single,
+  numbers=left,
+  linewidth = 0.8\textwidth,
+  xleftmargin = 0.1\textwidth,
+  morekeywords={adj,cout,real, imag,endl,multi1d}% list your attributes here
+}
+
+
+\def\[{\left [}
+\def\]{\right ]}
+\def\({\left (}
+\def\){\right )}
+
+\def\Op{\mathcal{O}}
+
+\def\pbp{\langle \bar{\psi} \psi \rangle}
+
+
+\setcounter{tocdepth}{3}
+
+\begin{document}
+
+\title{Connected Spectrum Measurements: $24^3 \times 48$}
+\author{Evan Weinberg}
+\date{\today}
+\maketitle
+
+\tableofcontents
+
+\clearpage
+
+% Effective mass and fit information.
+\input{../../reference_tex/correlators.tex}
+
+\clearpage
+
+\section{Results 4p8}
+
+\subsection{m005m060 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m005m060/spectrum2/tex/f4plus8l24t48b40m005m060.tex}
+
+\clearpage \subsection{m005m080 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m005m080/spectrum2/tex/f4plus8l24t48b40m005m080.tex}
+
+\clearpage \subsection{m005m100 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m005m100/spectrum2/tex/f4plus8l24t48b40m005m100.tex}
+
+\clearpage \subsection{m010m050 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m010m050/spectrum2/tex/f4plus8l24t48b40m010m050.tex}
+
+\clearpage \subsection{m010m060 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m010m060/spectrum2/tex/f4plus8l24t48b40m010m060.tex}
+
+\clearpage \subsection{m010m080 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m010m080/spectrum2/tex/f4plus8l24t48b40m010m080.tex}
+
+\clearpage \subsection{m010m100 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m010m100/spectrum2/tex/f4plus8l24t48b40m010m100.tex}
+
+\clearpage \subsection{m015m050 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m015m050/spectrum2/tex/f4plus8l24t48b40m015m050.tex}
+
+\clearpage \subsection{m015m060 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m015m060/spectrum2/tex/f4plus8l24t48b40m015m060.tex}
+
+\clearpage \subsection{m015m080 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m015m080/spectrum2/tex/f4plus8l24t48b40m015m080.tex}
+
+\clearpage \subsection{m015m100 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m015m100/spectrum2/tex/f4plus8l24t48b40m015m100.tex}
+
+\clearpage \subsection{m025m060 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m025m060/spectrum2/tex/f4plus8l24t48b40m025m060.tex}
+
+\clearpage \subsection{m025m080 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m025m080/spectrum2/tex/f4plus8l24t48b40m025m080.tex}
+
+\clearpage \subsection{m025m100 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m025m100/spectrum2/tex/f4plus8l24t48b40m025m100.tex}
+
+\clearpage \subsection{m035m040 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m035m040/spectrum2/tex/f4plus8l24t48b40m035m040.tex}
+
+\clearpage \subsection{m035m050 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m035m050/spectrum2/tex/f4plus8l24t48b40m035m050.tex}
+
+\clearpage \subsection{m035m060 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m035m060/spectrum2/tex/f4plus8l24t48b40m035m060.tex}
+
+\clearpage \subsection{m035m080 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m035m080/spectrum2/tex/f4plus8l24t48b40m035m080.tex}
+
+\clearpage \subsection{m035m100 4p8}
+
+\input{/projectnb/qcd/Staggered/FourPlusEight/f4plus8l24t48b40m035m100/spectrum2/tex/f4plus8l24t48b40m035m100.tex}
+
+\clearpage \section{Results 12}
+
+\subsection{m025 12}
+
+\input{/projectnb/qcd/Staggered/Twelve/f12l24t48b40m025/spectrum2/tex/f12l24t48b40m025.tex}
+
+\clearpage \subsection{m035 12}
+
+\input{/projectnb/qcd/Staggered/Twelve/f12l24t48b40m035/spectrum2/tex/f12l24t48b40m035.tex}
+
+\clearpage \section{Results 4 b66}
+
+\subsection{m015 4 b66}
+
+\input{/projectnb/qcd/Staggered/Four/f4l24t48b66m015/spectrum2/tex/f4l24t48b66m015.tex}
+
+\clearpage \subsection{m025 4 b66}
+
+\input{/projectnb/qcd/Staggered/Four/f4l24t48b66m025/spectrum2/tex/f4l24t48b66m025.tex}
+
+
+\clearpage
+
+
+\end{document}
