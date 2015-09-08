@@ -391,7 +391,7 @@ foreach my $params_ref (@ensemble_list)
 	
 	if ($ps_dev > 2)
 	{
-		$notify_string = $notify_string."The pion masses agree at only \\alert{$ps_dev sigma}, which is large.";
+		$notify_string = $notify_string."The pion masses agree at only $ps_dev sigma, which is large.";
 	}
 	
 	# Compare a0 masses.
@@ -408,7 +408,7 @@ foreach my $params_ref (@ensemble_list)
 		}
 		if ($a0_dev > 2)
 		{
-			$notify_string = $notify_string."The \$a_0\$ masses agree at only \\alert{$a0_dev sigma}, which is large.";
+			$notify_string = $notify_string."The \$a_0\$ masses agree at only $a0_dev sigma, which is large.";
 		}
 	}
 	else

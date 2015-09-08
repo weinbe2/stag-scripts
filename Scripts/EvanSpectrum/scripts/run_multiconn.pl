@@ -233,6 +233,11 @@ for (my $i = 1; $i <= $#multifit_file; $i++)
 	
 }
 
+if (@num_change == 0)
+{
+	push(@num_change, 0);
+}
+
 # Good! Print this out.
 
 printf("Tmin_min = %d\n", $tmin_min);
@@ -847,7 +852,7 @@ if ($num_dir > 0)
 	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/multifit_dir0\" using 1:2:3 with yerrorbars ls ".(1)." title \"\$ ".$dir_label." \$\"";
 		
 		
-	if ($singlefit_flag == 1)
+	if ($singlefit_flag == 1 && $num_change[0] != 0)
 	{
 		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlefit_dir\" using (\$1+0.2):2:3 with yerrorbars ls ".(2+10)." notitle";
 	}
@@ -894,7 +899,7 @@ if ($num_osc > 0 || $is_fpi == 1)
 	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/multifit_osc0\" using 1:2:3 with yerrorbars ls ".(1+3)." title \"\$ ".$osc_label." \$\"";
 		
 		
-	if ($singlefit_flag == 1)
+	if ($singlefit_flag == 1 && $num_change[0] != 0)
 	{
 		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlefit_osc\" using (\$1+0.2):2:3 with yerrorbars ls ".(2+3+10)." notitle";
 	}
@@ -948,7 +953,7 @@ if ($num_dir > 0)
 	print $outfile3 "\"./EvanSpectrum/scripts/tmp_space/pvalue\" using 1:2 ls ".(1)." notitle";
 		
 		
-	if ($singlefit_flag == 1)
+	if ($singlefit_flag == 1 && $num_change[0] != 0)
 	{
 		print $outfile3 ", \"./EvanSpectrum/scripts/tmp_space/singlepvalue\" using (\$1+0.2):2 ls ".(1+10)." notitle";
 	}
