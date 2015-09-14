@@ -20,10 +20,14 @@ my @ensemble_list = ();
 my @state_list = ();
 my @todo_list = ();
 
+# To do: add new decay states.
 my @safe_states = ("sc_stoch", "ps", "ps2", "sc", "ij", "i5", "ri5", "ris", "rij", "r0", "nu", "de", "rvt", "rpv", "dc_stoch", "dc_stoch_oscil", "dc_stoch_ppp", "sg_stoch", "dc_stoch_three", "sg_stoch_three", "dc_stoch_zcen", "sg_stoch_zcen");
 
 my @old_disconnected_filter = ("dc_stoch", "dc_stoch_oscil", "dc_stoch_ppp", "sg_stoch", "dc_stoch_three", "sg_stoch_three");
 my @new_disconnected_filter = ("dc_stoch_zcen", "sg_stoch_zcen");
+
+# Update this per machine.
+my $main_dir = "/projectnb/qcd/Staggered/";
 
 my $build = 0;
 my $analyze = 0;
@@ -134,6 +138,8 @@ foreach my $params_ref (@ensemble_list)
 	
 	if ($build == 1)
 	{
+		# We should add an option for connected states to build just the "sum." file.
+		# Disconnected should build finite difference files instead. 
 		if (-f "$path/$direc/spectrum2/fitparams/fitparam.dc_stoch")
 		{
 			my @split_lines = split(' ',`cat ./$path/$direc/spectrum2/fitparams/fitparam.dc_stoch`);
@@ -211,7 +217,15 @@ foreach my $params_ref (@ensemble_list)
 			
 			if ($plots == 1)
 			{
-				$perl_command = $perl_command." ./EvanSpectrum/scripts/run_connected.pl $path/$direc $state;";
+				# If a multi-exp fit exists...
+				if (-f $main_dir."$path/$direc/spectrum2/multifits/multifits.$state")
+				{
+					$perl_command = $perl_command." ./EvanSpectrum/scripts/run_multiconn.pl -do plots -ensemble $path/$direc -state $state;";
+				}
+				else # business as usual.
+				{
+					$perl_command = $perl_command." ./EvanSpectrum/scripts/run_connected.pl $path/$direc $state;";
+				}
 			}
 		}
 	}

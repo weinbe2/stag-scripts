@@ -205,7 +205,7 @@ for (my $i = 1; $i <= $#multifit_file; $i++)
 		$tmin_max = $splitted[TMIN];
 	}
 	
-	my $tmax = $splitted[TMAX]; # This should always be the same.
+	$tmax = $splitted[TMAX]; # This should always be the same.
 	
 	my $ln_dir = ($splitted[FITTYPE])%4;
 	my $ln_osc = ($splitted[FITTYPE]-$ln_dir)/4;
@@ -242,6 +242,7 @@ if (@num_change == 0)
 
 printf("Tmin_min = %d\n", $tmin_min);
 printf("Tmin_max = %d\n", $tmin_max);
+printf("Tmax = %d\n", $tmax);
 printf("Num dir. = %d\n", $num_dir);
 printf("Num osc. = %d\n", $num_osc);
 printf("Num chg. at ");
@@ -253,17 +254,30 @@ printf("\n");
 
 # If there's a multifitinterval file, grab it and learn something!
 my $tmin_pref = 0;
-my $tmax_pref = 0;
+my $tmax_pref = $tmax;
+my $bin_size = 0;
 if (-f "$path/$relpath/$direc/spectrum2/multifitparams/multifitparam.$state")
 {
 	open(my $fit_handle, "<$path/$relpath/$direc/spectrum2/multifitparams/multifitparam.$state");
 	my @fit_lines = <$fit_handle>;
 	my @splitted_values = split(' ', $fit_lines[0]);
 	$tmin_pref = $splitted_values[0];
-	$tmax_pref = $splitted_values[1];
+	$bin_size = $splitted_values[2];
 	close($fit_handle);
 	printf("Prf tmin %d\n", $tmin_pref);
 }
+else
+{
+	$tmin_pref = 5;
+	$bin_size = 1;
+	printf("Prf tmin %d\n", 5);
+}
+
+# Push updated tmax anyway.
+open(my $fit_handle2, ">$path/$relpath/$direc/spectrum2/multifitparams/multifitparam.$state");
+print $fit_handle2 "$tmin_pref ".int($tmax+0.5)." $bin_size"; # some defaults.
+close($fit_handle2);
+
 
 # Alright! Learn something about the mean and error of ground states.
 # This helps us pick y-intervals.
