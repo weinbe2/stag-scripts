@@ -5,6 +5,11 @@
 % Update 09-15-2014, Use new loading interface.
 function build_correlator_scalar(fname, stoch_src, blocksize)
 
+	% Load the path with routines to load, bin, etc data.
+	addpath('.\process', '-end');
+	% Get routines for fourier fits.
+	addpath('.\fourier', '-end');
+
 	% Load ensemble info.
 	[fl_l, fl_h, parse_Ns, parse_Nt, beta, m_l, m_h] = load_info_file(fname);
 
@@ -13,14 +18,59 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
     volume = parse_Ns^3;
     fl_flavor = fl_l/4; % Because staggered.
 	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Load and save the vev! %
+	%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
 	% First, get some info on the vev.
 	
 	[pbp_stats, vev_stats] = load_vev_scalar(fname, fl_flavor, parse_Nt, parse_Ns, number_bl, blocksize);
-
-	% Build the vev subtracted correlators.
-    % load it up!
 	
-	[disc_sum, disc_jack, disc_cov_mat, disc_err] = load_correlator_scalar(fname, fl_flavor, parse_Nt, parse_Ns, number_bl, blocksize);
+	% Save the vev info!
+	
+	raw_output = zeros(size(pbp_stats,1), 3);
+	for j=1:size(pbp_stats,1)
+		raw_output(j,1) = pbp_stats(j,1);
+		raw_output(j,2) = pbp_stats(j,2);
+		raw_output(j,3) = pbp_stats(j,4);
+	end
+	full_fname = strcat(fname, '/spectrum2/vev/history.vev1');
+	save(full_fname, 'raw_output', '-ascii', '-double');
+	
+	raw_output = zeros(size(vev_stats,1), 3);
+	for j=1:size(pbp_stats,1)
+		raw_output(j,1) = vev_stats(j,1);
+		raw_output(j,2) = vev_stats(j,2);
+		raw_output(j,3) = vev_stats(j,4);
+	end
+	full_fname = strcat(fname, '/spectrum2/vev/history.vev2');
+	save(full_fname, 'raw_output', '-ascii', '-double');
+
+	% This has a new structure now!
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Load and save sum for D! %
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	% First, load the disconnected correlator.
+	% This doesn't depend on the connected piece, which doesn't
+	% exist yet.
+	
+	[disc_sum, disc_jack, disc_cov_mat, disc_err, num_blocks] = ...
+		get_correlator(fname, 'dc_stoch', parse_Nt, parse_Ns, ...
+		fl_flavor, blocksize);
+		
+		
+	% Save D.
+	data = zeros(parse_Nt/2+1,3);
+    for i=1:(parse_Nt/2+1)
+        data(i,1) = i-1;
+        data(i,2) = disc_sum(i);
+        data(i,3) = disc_err(i);
+    end
+	full_fname = strcat(fname, '/spectrum2/sum/sum.dc_stoch');
+    save(full_fname,'data','-ascii', '-double');
+	
 	
 	% Deal with some old variables kicking around. 
 	parse_Nt_in = numel(disc_sum);
@@ -29,7 +79,11 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	number_files_in = 1;
 	number_bl_in = stoch_src;
 	
-	% Next, load the connected correlator, and play the same game.
+	%%%%%%%%%%%%%%%%%%%%
+	% Load and save C! %
+	%%%%%%%%%%%%%%%%%%%%
+	
+	% Next, load the connected correlator.
 
 	full_fname = strcat(fname, '/spectrum2/stoch/SPECTRUM.dat');
 	fd = fopen(full_fname,'rt');
@@ -43,6 +97,8 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	num_data = size(conn_values,1)/parse_Nt;
 	num_data_in = num_data;
 
+	% Old! Use reshape.
+	%{
     conn_corr = zeros(parse_Nt, num_data);
 	config_nums_conn = zeros(1, num_data);
     for i=1:num_data
@@ -52,8 +108,17 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 			config_nums_conn(1,i) = conn_values((i-1)*parse_Nt+j,1);
         end
     end
-
-    connected = conn_corr;
+	
+	connected = conn_corr;
+	%}
+	
+	% Get corr.
+	connected = reshape(conn_values(:,3), [parse_Nt, num_data])/(parse_Nt*volume*stoch_src*(stoch_src-1)*0.5);
+	
+	% Get cfg numbers, too.
+	tmpinfo = reshape(conn_values(:,1), [parse_Nt, num_data]);
+	config_nums_conn = tmpinfo(1,1,:);
+	clear('tmpinfo');
 	
 	connected_unfolded = connected;
 
@@ -62,28 +127,60 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	% Block data!
 	[connected_blocks, num_blocks] = block_data(connected, 2, blocksize);
 	
-	% Get jackknife blocks and covariance matrix.
+	% Sum, blocks, errors, etc.
 	connected_sum = mean(connected_blocks, 2);
-	[connected_jack, connected_cov_mat, connected_err] = jackknife_from_blocks(connected_blocks);
+	connected_jack = jackknife_bins(connected_blocks, 2);
+	[connected_cov_mat, connected_err] = errors_jackknife(connected_sum, connected_jack);
+	
+	% Spit the connected corr out now so we can get sg_stoch.
+	
+	% Save corr.sc_stoch
+	conn_output = zeros(num_data_in*parse_Nt_in, 3);
+    for i=1:parse_Nt_in
+        for j=1:num_data_in
+			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
+            conn_output((j-1)*parse_Nt_in+i, 2) = i-1;
+            conn_output((j-1)*parse_Nt_in+i, 3) = connected_unfolded(i,j);
+		end
+	end
+	full_fname = strcat(fname, '/spectrum2/corr/corr.sc_stoch');
+    save(full_fname, 'conn_output', '-ascii', '-double');
+	
+	% Save sum.sc_stoch
+	data = zeros(parse_Nt/2+1,3);
+    for i=1:(parse_Nt/2+1)
+        data(i,1) = i-1;
+        data(i,2) = connected_sum(i);
+        data(i,3) = connected_err(i);
+    end
+	full_fname = strcat(fname, '/spectrum2/sum/sum.sc_stoch');
+    save(full_fname,'data','-ascii','-double');
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Load and save sum for #D-C! %
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
     % While we're at it, also build sigma.
 	
 	% We put in the factor of N_f/4 earlier.
 	sigma_sum = disc_sum - connected_sum;
-	sigma_jack = disc_jack - connected_jack;
-	sigma_rep = repmat(sigma_sum, [1 num_blocks]);
+	sigma_jack = disc_jack - connected_jack;	
+	[sigma_cov_mat, sigma_err] = errors_jackknife(sigma_sum, sigma_jack);
 	
-	% Get a var-covar matrix and some errors.
-	sigma_cov_mat = zeros(parse_Nt);
-	sigma_err = zeros(parse_Nt, 1);
-	for t1 = 1:parse_Nt
-        for t2 = 1:parse_Nt
-            sigma_cov_mat(t1,t2) = sum((sigma_rep(t1,:)-sigma_jack(t1,:)).*(sigma_rep(t2,:)-sigma_jack(t2,:)),2).*(num_blocks-1)./num_blocks;
-            if t1 == t2
-                sigma_err(t1) = sqrt(sigma_cov_mat(t1,t1));
-            end
-        end
+	% Save!
+	data = zeros(parse_Nt/2+1,3);
+    for i=1:(parse_Nt/2+1)
+        data(i,1) = i-1;
+        data(i,2) = sigma_sum(i);
+        data(i,3) = sigma_err(i);
     end
+
+	full_fname = strcat(fname, '/spectrum2/sum/sum.sg_stoch');
+    save(full_fname,'data','-ascii', '-double');
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Save #D, #D-C with global vev subtracted %
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	% New 01-17-2015: Save the dc, sg corr where the total vev is subbed from all of them.
 	% This code is mostly borrowed from load_correlator_scalar.
@@ -102,7 +199,6 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	for i=1:number_src
 		disc_corr_output(:,i,i,:) = 0;
     end
-    
   	disc_corr_reduced = sum(sum(disc_corr_output, 2),3)/(number_src*(number_src-1));
 	disc_corr_fixed = zeros(parse_Nt, size(disc_corr_reduced,4));
 	disc_corr_fixed(:,:) = disc_corr_reduced(:,1,1,:);
@@ -111,71 +207,76 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	
 	% We save disc_corr_fixed, sigma_corr_fixed. 
 	
-	% NEW 11-16-2014
-	% Get info on the autocorrelation of these correlators.
-	
-	% UPDATE 01-13-2015: Get rid of it. I don't properly factor in the deriv, nor do I care.
-	%{
-	[realops config_nums_pbp] = load_pbppart(fname, parse_Nt, stoch_src);
-	realops = realops.*fl_flavor;
-	disc_corr_output = build_vev_correlator(realops, 1);
-	vev_center = mean(mean(realops, 3), 1);
-	vev_sub = repmat(reshape(parse_Nt.*((vev_center')*vev_center),1,number_src,number_src), [parse_Nt, 1, 1, num_data]);
-	disc_corr_output = disc_corr_output - vev_sub;
-	for i=1:stoch_src
-		disc_corr_output(:,i,i,:) = 0;
+	conn_output = zeros(num_data_in*parse_Nt_in, 3);
+    for i=1:parse_Nt_in
+        for j=1:num_data_in
+			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
+            conn_output((j-1)*parse_Nt_in+i, 2) = i-1;
+            conn_output((j-1)*parse_Nt_in+i, 3) = disc_corr_fixed(i,j);
+		end
 	end
-	disc_src_avg = reshape(sum(sum(disc_corr_output, 2),3)/(number_src*(number_src-1)), [parse_Nt, num_data]);
-	sigma_src_avg = disc_src_avg - connected;
+	full_fname = strcat(fname, '/spectrum2/corr/corr.dc_stoch');
+    save(full_fname, 'conn_output', '-ascii', '-double');
 	
-	wall_corr = disc_src_avg;
-	[the_mean the_error the_error_error the_tau the_tau_err] = UWerr(transpose(wall_corr), 1.5, size(wall_corr,2), 'Name', 1);
-	disp(strcat(['1 ' num2str(the_mean) ' ' num2str(the_error) ' ' num2str(the_error_error) ' ' num2str(the_tau) ' ' num2str(the_tau_err)]))
-	[the_mean the_error the_error_error the_tau the_tau_err] = UWerr(transpose(wall_corr), 1.5, size(wall_corr,2), 'Name', floor(parse_Nt/4)+1);
-	disp(strcat([num2str(floor(parse_Nt/4)+1) ' ' num2str(the_mean) ' ' num2str(the_error) ' ' num2str(the_error_error) ' ' num2str(the_tau) ' ' num2str(the_tau_err)]))
-	[the_mean the_error the_error_error the_tau the_tau_err] = UWerr(transpose(wall_corr), 1.5, size(wall_corr,2), 'Name', floor(parse_Nt/2)+1);
-	disp(strcat([num2str(floor(parse_Nt/2)+1) ' ' num2str(the_mean) ' ' num2str(the_error) ' ' num2str(the_error_error) ' ' num2str(the_tau) ' ' num2str(the_tau_err)]))
-	wall_corr = sigma_src_avg;
-	[the_mean the_error the_error_error the_tau the_tau_err] = UWerr(transpose(wall_corr), 1.5, size(wall_corr,2), 'Name', 1);
-	disp(strcat(['1 ' num2str(the_mean) ' ' num2str(the_error) ' ' num2str(the_error_error) ' ' num2str(the_tau) ' ' num2str(the_tau_err)]))
-	[the_mean the_error the_error_error the_tau the_tau_err] = UWerr(transpose(wall_corr), 1.5, size(wall_corr,2), 'Name', floor(parse_Nt/4)+1);
-	disp(strcat([num2str(floor(parse_Nt/4)+1) ' ' num2str(the_mean) ' ' num2str(the_error) ' ' num2str(the_error_error) ' ' num2str(the_tau) ' ' num2str(the_tau_err)]))
-	[the_mean the_error the_error_error the_tau the_tau_err] = UWerr(transpose(wall_corr), 1.5, size(wall_corr,2), 'Name', floor(parse_Nt/2)+1);
-	disp(strcat([num2str(floor(parse_Nt/2)+1) ' ' num2str(the_mean) ' ' num2str(the_error) ' ' num2str(the_error_error) ' ' num2str(the_tau) ' ' num2str(the_tau_err)]))
-	%}
+	conn_output = zeros(num_data_in*parse_Nt_in, 3);
+    for i=1:parse_Nt_in
+        for j=1:num_data_in
+			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
+            conn_output((j-1)*parse_Nt_in+i, 2) = i-1;
+            conn_output((j-1)*parse_Nt_in+i, 3) = sigma_corr_fixed(i,j);
+		end
+	end
+	full_fname = strcat(fname, '/spectrum2/corr/corr.sg_stoch');
+    save(full_fname, 'conn_output', '-ascii', '-double');
+	
+	%%%%%%%%%%%%%%
+	% ppp stuff. %
+	%%%%%%%%%%%%%%
 	
 	% NEW 09-29-2014
 	% Save ppp'd correlators, too.
 	disc_ppp_sum = ppp_data(disc_sum);
 	disc_ppp_jack = ppp_data(disc_jack);
-	disc_ppp_rep = repmat(disc_ppp_sum, [1 num_blocks]);
+	[disc_ppp_cov_mat, disc_ppp_err] = errors_jackknife(disc_ppp_sum, disc_ppp_jack);
+	
+	
 	sigma_ppp_sum = ppp_data(sigma_sum);
 	sigma_ppp_jack = ppp_data(sigma_jack);
-	sigma_ppp_rep = repmat(sigma_ppp_sum, [1 num_blocks]);
+	[sigma_ppp_cov_mat, sigma_ppp_err] = errors_jackknife(sigma_ppp_sum, sigma_ppp_jack);
 	
-	disc_ppp_cov_mat = zeros(parse_Nt);
-	disc_ppp_err = zeros(parse_Nt, 1);
-	sigma_ppp_cov_mat = zeros(parse_Nt);
-	sigma_ppp_err = zeros(parse_Nt, 1);
-	for t1 = 1:parse_Nt
-        for t2 = 1:parse_Nt
-            sigma_ppp_cov_mat(t1,t2) = sum((sigma_ppp_rep(t1,:)-sigma_ppp_jack(t1,:)).*(sigma_ppp_rep(t2,:)-sigma_ppp_jack(t2,:)),2).*(num_blocks-1)./num_blocks;
-			disc_ppp_cov_mat(t1,t2) = sum((disc_ppp_rep(t1,:)-disc_ppp_jack(t1,:)).*(disc_ppp_rep(t2,:)-disc_ppp_jack(t2,:)),2).*(num_blocks-1)./num_blocks;
-            if t1 == t2
-                sigma_ppp_err(t1) = sqrt(sigma_ppp_cov_mat(t1,t1));
-				disc_ppp_err(t1) = sqrt(disc_ppp_cov_mat(t1,t1));
-            end
-        end
+	data = zeros(parse_Nt/2+1,3);
+    for i=1:(parse_Nt/2+1)
+        data(i,1) = i-1;
+        data(i,2) = disc_ppp_sum(i);
+        data(i,3) = disc_ppp_err(i);
     end
-
+	full_fname = strcat(fname, '/spectrum2/sum/sum.dc_stoch_ppp');
+    save(full_fname,'data','-ascii');
+    
+	
+	data = zeros(parse_Nt/2+1,3);
+    for i=1:(parse_Nt/2+1)
+        data(i,1) = i-1;
+        data(i,2) = sigma_ppp_sum(i);
+        data(i,3) = sigma_ppp_err(i);
+    end
+	full_fname = strcat(fname, '/spectrum2/sum/sum.sg_stoch_ppp');
+    save(full_fname,'data','-ascii');
+	
+	%%%%%%%%%%%%%%%%%%%%%
+	% Effective masses. %
+	%%%%%%%%%%%%%%%%%%%%%
+	
 	% Get some effective masses of D, too!
 	[disc_mass_sum, disc_roots_sum, disc_amps_sum] = effective_mass_utility(disc_sum, parse_Nt, 1, 2, 0);
 	disc_mass_jack = zeros([size(disc_mass_sum) num_blocks]);
 	for b=1:num_blocks
 		[ disc_mass_jack(:,:, b), ~, ~] = effective_mass_utility(disc_jack(:,b), parse_Nt, 1, 2, 0);
 	end
-	disc_mass_rep = repmat(disc_mass_sum, [1 1 num_blocks]);
-	disc_mass_err = sqrt(sum((disc_mass_rep-disc_mass_jack).^2, 3).*(num_blocks-1)/(num_blocks));
+	[disc_mass_cov_mat, disc_mass_err] = errors_jackknife(disc_mass_sum, disc_mass_jack);
+	clear('disc_mass_cov_mat');
+	clear('disc_roots_sum');
+	clear('disc_amps_sum');
 	
 	% Two state effective masses, too.
 	[disc_mass2_sum, disc_roots2_sum, disc_amps2_sum] = effective_mass_utility(disc_sum, parse_Nt, 2, 4, 0);
@@ -185,6 +286,9 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	disc_mass2_rep = repmat(disc_mass2_sum, [1 1 num_blocks]);
 	disc_mass2_err = sqrt(sum((disc_mass2_rep-disc_mass2_jack).^2, 3).*(num_blocks-1)/(num_blocks));
+	clear('disc_roots2_sum');
+	clear('disc_amps2_sum');
+	clear('disc_mass2_rep');
 
 	
 	% NEW: 09-22-2014, get some new effective masses.
@@ -273,93 +377,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	sigma_kmi_mass_err = sqrt((num_blocks-1)/(num_blocks)*sum((sigma_kmi_mass_jack - repmat(sigma_kmi_mass, [1 num_blocks])).^2, 2));
 	
-	
-	% Save some things!
 
-    conn_output = zeros(num_data_in*parse_Nt_in, 3);
-    for i=1:parse_Nt_in
-        for j=1:num_data_in
-			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
-            conn_output((j-1)*parse_Nt_in+i, 2) = i-1;
-            conn_output((j-1)*parse_Nt_in+i, 3) = connected_unfolded(i,j);
-		end
-	end
-	full_fname = strcat(fname, '/spectrum2/corr/corr.sc_stoch');
-    save(full_fname, 'conn_output', '-ascii');
-	
-	conn_output = zeros(num_data_in*parse_Nt_in, 3);
-    for i=1:parse_Nt_in
-        for j=1:num_data_in
-			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
-            conn_output((j-1)*parse_Nt_in+i, 2) = i-1;
-            conn_output((j-1)*parse_Nt_in+i, 3) = disc_corr_fixed(i,j);
-		end
-	end
-	full_fname = strcat(fname, '/spectrum2/corr/corr.dc_stoch');
-    save(full_fname, 'conn_output', '-ascii');
-	
-	conn_output = zeros(num_data_in*parse_Nt_in, 3);
-    for i=1:parse_Nt_in
-        for j=1:num_data_in
-			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
-            conn_output((j-1)*parse_Nt_in+i, 2) = i-1;
-            conn_output((j-1)*parse_Nt_in+i, 3) = sigma_corr_fixed(i,j);
-		end
-	end
-	full_fname = strcat(fname, '/spectrum2/corr/corr.sg_stoch');
-    save(full_fname, 'conn_output', '-ascii');
-
-    % Also spit out some sums.
-    data = zeros(parse_Nt/2+1,3);
-    for i=1:(parse_Nt/2+1)
-        data(i,1) = i-1;
-        data(i,2) = connected_sum(i);
-        data(i,3) = connected_err(i);
-    end
-
-	full_fname = strcat(fname, '/spectrum2/sum/sum.sc_stoch');
-    save(full_fname,'data','-ascii');
-
-    data = zeros(parse_Nt/2+1,3);
-    for i=1:(parse_Nt/2+1)
-        data(i,1) = i-1;
-        data(i,2) = disc_sum(i);
-        data(i,3) = disc_err(i);
-    end
-
-	full_fname = strcat(fname, '/spectrum2/sum/sum.dc_stoch');
-    save(full_fname,'data','-ascii');
-	
-	data = zeros(parse_Nt/2+1,3);
-    for i=1:(parse_Nt/2+1)
-        data(i,1) = i-1;
-        data(i,2) = disc_ppp_sum(i);
-        data(i,3) = disc_ppp_err(i);
-    end
-
-	full_fname = strcat(fname, '/spectrum2/sum/sum.dc_stoch_ppp');
-    save(full_fname,'data','-ascii');
-
-    data = zeros(parse_Nt/2+1,3);
-    for i=1:(parse_Nt/2+1)
-        data(i,1) = i-1;
-        data(i,2) = sigma_sum(i);
-        data(i,3) = sigma_err(i);
-    end
-
-	full_fname = strcat(fname, '/spectrum2/sum/sum.sg_stoch');
-    save(full_fname,'data','-ascii');
-	
-	data = zeros(parse_Nt/2+1,3);
-    for i=1:(parse_Nt/2+1)
-        data(i,1) = i-1;
-        data(i,2) = sigma_ppp_sum(i);
-        data(i,3) = sigma_ppp_err(i);
-    end
-
-	full_fname = strcat(fname, '/spectrum2/sum/sum.sg_stoch_ppp');
-    save(full_fname,'data','-ascii');
-	
 	% Spit out effective masses.
 	
 	raw_output = zeros(size(disc_mass_err,1), 3);
@@ -482,30 +500,6 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.sg_stoch_kmi', num2str(1));
 
 	save(full_fname, 'raw_output', '-ascii');
-	
-	% Save pbp, vev.
-	
-	raw_output = zeros(size(pbp_stats,1), 3);
-	for j=1:size(pbp_stats,1)
-		raw_output(j,1) = pbp_stats(j,1);
-		raw_output(j,2) = pbp_stats(j,2);
-		raw_output(j,3) = pbp_stats(j,4);
-	end
-	full_fname = strcat(fname, '/spectrum2/vev/history.vev1');
-
-	save(full_fname, 'raw_output', '-ascii');
-	
-	raw_output = zeros(size(vev_stats,1), 3);
-	for j=1:size(pbp_stats,1)
-		raw_output(j,1) = vev_stats(j,1);
-		raw_output(j,2) = vev_stats(j,2);
-		raw_output(j,3) = vev_stats(j,4);
-	end
-	full_fname = strcat(fname, '/spectrum2/vev/history.vev2');
-
-	save(full_fname, 'raw_output', '-ascii');
-	
-	
 	
 end
 
