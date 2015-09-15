@@ -8,7 +8,7 @@ use POSIX;
 use BSMrun;
 use Switch;
 
-# call: ./spectrum_connected_multi.pl -do {build|analyze|plots} -ensembles {f4plus8l24t48b30m005m020} -states [list of states]
+# call: ./spectrum_connected_multi.pl -do {build|analyze|plots|tex|multitex} -ensembles {f4plus8l24t48b30m005m020} -states [list of states]
 
 if (@ARGV < 4) {
    die "Inappropriate number of arguments: expected ./spectrum_connected_multi.pl -do {build|analyze|plots} -ensembles {f4plus8l24t48b30m005m020} -states [list of states] {-noerrors}\n";
@@ -32,6 +32,8 @@ my $main_dir = "/projectnb/qcd/Staggered/";
 my $build = 0;
 my $analyze = 0;
 my $plots = 0;
+my $tex = 0;
+my $multitex = 0;
 my $noerrors = 0;
 my $diagonly = 0;
 
@@ -63,6 +65,14 @@ for (my $i = 0; $i < @ARGV; $i++)
 				if ($ARGV[$i+1] eq "build")
 				{
 					$build = 1;
+				}
+				if ($ARGV[$i+1] eq "tex")
+				{
+					$tex = 1;
+				}
+				if ($ARGV[$i+1] eq "multitex")
+				{
+					$multitex = 1;
 				}
 				$i++;
 			}
@@ -229,6 +239,8 @@ foreach my $params_ref (@ensemble_list)
 			}
 		}
 	}
+	
+	# Once all scripts have been made, run a texcopy. 
 }
 
 # And run it!

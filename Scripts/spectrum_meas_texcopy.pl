@@ -127,9 +127,12 @@ for (my $i = 0; $i < @ARGV; $i++)
 			{
 				if (!($ARGV[$i+1] ~~ @safe_states)) # Remember, number code at end.
 				{
-					die "State $ARGV[$i+1] is not an approved state type. Exiting.\n";
+					print "State $ARGV[$i+1] is not an approved state type. Skipping.\n";
 				}
-				push (@state_list, $ARGV[$i+1]);
+				else
+				{
+					push (@state_list, $ARGV[$i+1]);
+				}
 				$i++;
 			}
 		}
