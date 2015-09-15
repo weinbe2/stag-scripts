@@ -1,4 +1,4 @@
-#! /usr/bin/perl 
+#! /usr/bin/perl -w
 
 # 2015-04-10 Extended to include calling disconnected functions.
 # 2015-04-17 Added the diagonal only flag
@@ -37,8 +37,14 @@ my $multitex = 0;
 my $noerrors = 0;
 my $diagonly = 0;
 
+# Lots of things trigger a disconnected build.
+# Only do it once!
+my $did_build_disc = 0;
+
 my $perl_command = ""; # for plotting
 my $matlab_command = "cd('../Scripts/EvanSpectrum/matlab');"; # for analysis.
+
+$| = 1;
 
 for (my $i = 0; $i < @ARGV; $i++)
 {
@@ -138,7 +144,10 @@ for (my $i = 0; $i < @ARGV; $i++)
 
 }
 
+
 # Build up commands! Both the plots and analyze commands, since it's cheap.
+
+
 
 foreach my $params_ref (@ensemble_list)
 {
@@ -146,23 +155,7 @@ foreach my $params_ref (@ensemble_list)
 	my $direc = $params{ensemble};
 	my $path = $params{path};
 	
-	if ($build == 1)
-	{
-		# We should add an option for connected states to build just the "sum." file.
-		# Disconnected should build finite difference files instead. 
-		if (-f "$path/$direc/spectrum2/fitparams/fitparam.dc_stoch")
-		{
-			my @split_lines = split(' ',`cat ./$path/$direc/spectrum2/fitparams/fitparam.dc_stoch`);
-			$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, $split_lines[4]);"
-		}
-		else
-		{
-			# If we have no blocksize to refer to, just assume 1.
-			$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, 1);"
-		}
-		
-		$perl_command = $perl_command."./EvanSpectrum/scripts/run_disconnected.pl $path/$direc;";
-	}
+	print "$direc $path\n"; 
 	
 	foreach my $state (@state_list)
 	{
@@ -170,6 +163,26 @@ foreach my $params_ref (@ensemble_list)
 		# Is this an old disconnected measurement?
 		if ($state ~~ @old_disconnected_filter)
 		{
+			if ($build == 1 && $did_build_disc == 0)
+			{
+				# We should add an option for connected states to build just the "sum." file.
+				# Disconnected should build finite difference files instead. 
+				if (-f "$path/$direc/spectrum2/fitparams/fitparam.dc_stoch")
+				{
+					my @split_lines = split(' ',`cat ./$path/$direc/spectrum2/fitparams/fitparam.dc_stoch`);
+					$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, $split_lines[4]);"
+				}
+				else
+				{
+					# If we have no blocksize to refer to, just assume 1.
+					$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, 1);"
+				}
+				
+				$perl_command = $perl_command."./EvanSpectrum/scripts/run_disconnected.pl $path/$direc;";
+				
+				$did_build_disc = 1;
+			}
+		
 			if ($analyze == 1)
 			{
 				if ($noerrors == 0)
@@ -204,25 +217,85 @@ foreach my $params_ref (@ensemble_list)
 		}
 		elsif ($state ~~ @new_disconnected_filter) # or a new one?
 		{
-			if ($noerrors == 0)
+			if ($build == 1 && $did_build_disc == 0)
 			{
-				$matlab_command = $matlab_command." study_disconnected_zcen(\'../../$path/$direc\', \'$state\');";
+				# We should add an option for connected states to build just the "sum." file.
+				# Disconnected should build finite difference files instead. 
+				if (-f "$path/$direc/spectrum2/fitparams/fitparam.dc_stoch")
+				{
+					my @split_lines = split(' ',`cat ./$path/$direc/spectrum2/fitparams/fitparam.dc_stoch`);
+					$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, $split_lines[4]);"
+				}
+				else
+				{
+					# If we have no blocksize to refer to, just assume 1.
+					$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, 1);"
+				}
+				
+				$perl_command = $perl_command."./EvanSpectrum/scripts/run_disconnected.pl $path/$direc;";
+				
+				$did_build_disc = 1;
 			}
-			else # Ignore error analysis
+		
+			if ($analyze == 1)
 			{
-				$matlab_command = $matlab_command." study_disconnected_zcen(\'../../$path/$direc\', \'$state\', 1);";
+				if ($noerrors == 0)
+				{
+					$matlab_command = $matlab_command." study_disconnected_zcen(\'../../$path/$direc\', \'$state\');";
+				}
+				else # Ignore error analysis
+				{
+					$matlab_command = $matlab_command." study_disconnected_zcen(\'../../$path/$direc\', \'$state\', 1);";
+				}
 			}
 		}
 		else # otherwise, it's a connected business as usual.
 		{
-			if ($noerrors == 0 && $diagonly == 0)
+			# Build sc_stoch if needed.
+			if ($state eq 'sc_stoch' && $build == 1 && $did_build_disc == 0)
 			{
-				$matlab_command = $matlab_command." study_connected_new(\'../../$path/$direc\', \'$state\');";
+				# We should add an option for connected states to build just the "sum." file.
+				# Disconnected should build finite difference files instead. 
+				if (-f "$path/$direc/spectrum2/fitparams/fitparam.dc_stoch")
+				{
+					my @split_lines = split(' ',`cat ./$path/$direc/spectrum2/fitparams/fitparam.dc_stoch`);
+					$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, $split_lines[4]);"
+				}
+				else
+				{
+					# If we have no blocksize to refer to, just assume 1.
+					$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, 1);"
+				}
+				
+				$perl_command = $perl_command."./EvanSpectrum/scripts/run_disconnected.pl $path/$direc;";
+				
+				$did_build_disc = 1;
 			}
-			else # Ignore error analysis
+			elsif ($build == 1)
 			{
-				my $flag = $noerrors + 2*$diagonly;
-				$matlab_command = $matlab_command." study_connected_new(\'../../$path/$direc\', \'$state\', $flag);";
+				if (-f "$path/$direc/spectrum2/fitparams/fitparam.$state")
+				{
+					my @split_lines = split(' ',`cat ./$path/$direc/spectrum2/fitparams/fitparam.$state`);
+					$matlab_command = $matlab_command." build_correlator(\'../../$path/$direc\', \'$state\', $split_lines[4]);"
+				}
+				else
+				{
+					# If we have no blocksize to refer to, just assume 1.
+					$matlab_command = $matlab_command." build_correlator_scalar(\'../../$path/$direc\', 6, 1);"
+				}
+			}
+		
+			if ($analyze == 1)
+			{
+				if ($noerrors == 0 && $diagonly == 0)
+				{
+					$matlab_command = $matlab_command." study_connected_new(\'../../$path/$direc\', \'$state\');";
+				}
+				else # Ignore error analysis
+				{
+					my $flag = $noerrors + 2*$diagonly;
+					$matlab_command = $matlab_command." study_connected_new(\'../../$path/$direc\', \'$state\', $flag);";
+				}
 			}
 			
 			if ($plots == 1)

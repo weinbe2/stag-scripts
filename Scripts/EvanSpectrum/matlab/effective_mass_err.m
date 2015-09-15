@@ -1,6 +1,9 @@
 function [ roots, roots_err, masses, masses_err, amps, amps_err ] = effective_mass_err(fname, state, parse_Nt, K, N, C, fold, do_err, blocksize, to_file)
     % Try this multi-state effective mass idea.
 	
+	% Load the path with routines to load, bin, etc data.
+	addpath('./process', '-end');
+	
     % Load the data!
 	connected = load_correlator(fname, state, parse_Nt);
     
@@ -57,7 +60,7 @@ function [ roots, roots_err, masses, masses_err, amps, amps_err ] = effective_ma
 			  end
 			  full_fname = strcat(fname, '/spectrum2/effmass/effmass.', state, num2str(i));
         
-			  save(full_fname, 'raw_output', '-ascii');
+			  save(full_fname, 'raw_output', '-ascii', '-double');
 			   
 		   end
 			

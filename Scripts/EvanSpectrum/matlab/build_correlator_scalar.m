@@ -6,9 +6,8 @@
 function build_correlator_scalar(fname, stoch_src, blocksize)
 
 	% Load the path with routines to load, bin, etc data.
-	addpath('.\process', '-end');
-	% Get routines for fourier fits.
-	addpath('.\fourier', '-end');
+	addpath('./process', '-end');
+	
 
 	% Load ensemble info.
 	[fl_l, fl_h, parse_Ns, parse_Nt, beta, m_l, m_h] = load_info_file(fname);
@@ -117,7 +116,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	
 	% Get cfg numbers, too.
 	tmpinfo = reshape(conn_values(:,1), [parse_Nt, num_data]);
-	config_nums_conn = tmpinfo(1,1,:);
+	config_nums_conn = tmpinfo(1,:);
 	clear('tmpinfo');
 	
 	connected_unfolded = connected;
@@ -250,7 +249,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
         data(i,2) = disc_ppp_sum(i);
         data(i,3) = disc_ppp_err(i);
     end
-	full_fname = strcat(fname, '/spectrum2/sum/sum.dc_stoch_ppp');
+	full_fname = strcat(fname, '/spectrum2/sum/sum.dc_stoch_ppp', '-double');
     save(full_fname,'data','-ascii');
     
 	
@@ -260,7 +259,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
         data(i,2) = sigma_ppp_sum(i);
         data(i,3) = sigma_ppp_err(i);
     end
-	full_fname = strcat(fname, '/spectrum2/sum/sum.sg_stoch_ppp');
+	full_fname = strcat(fname, '/spectrum2/sum/sum.sg_stoch_ppp', '-double');
     save(full_fname,'data','-ascii');
 	
 	%%%%%%%%%%%%%%%%%%%%%
@@ -388,7 +387,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.dc_stoch', num2str(1));
 
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 
 
 	raw_output = zeros(size(disc_mass2_err,1), 3);
@@ -398,7 +397,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 		raw_output(j,3) = real(disc_mass2_err(j, 1));
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.dc_stoch_oscil', num2str(1));
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 	
 	raw_output = zeros(size(disc_mass2_err,1), 3);
 	for j=1:(size(disc_mass2_err,1))
@@ -407,7 +406,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 		raw_output(j,3) = real(disc_mass2_err(j, 2));
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.dc_stoch_oscil', num2str(2));
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 
 	
     raw_output = zeros(size(disc_kuti_mass_err,1), 3);
@@ -418,7 +417,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.dc_stoch_kuti', num2str(1));
 
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 
 	raw_output = zeros(size(disc_kuti2_mass_err,1), 3);
 	for j=1:(size(disc_kuti2_mass_err,1))
@@ -428,7 +427,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.dc_stoch_ppp', num2str(1));
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
     
 	raw_output = zeros(size(disc_kmi_mass_err,1), 3);
 	for j=1:(size(disc_kmi_mass_err,1))
@@ -438,7 +437,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.dc_stoch_kmi', num2str(1));
 
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
     
 	% Sigma effective masses, too.
 	raw_output = zeros(size(sigma_mass_err,1), 3);
@@ -449,7 +448,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.sg_stoch', num2str(1));
 
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 
 
 	raw_output = zeros(size(sigma_mass2_err,1), 3);
@@ -459,7 +458,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 		raw_output(j,3) = real(sigma_mass2_err(j, 1));
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.sg_stoch_oscil', num2str(1));
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 	
 	raw_output = zeros(size(sigma_mass2_err,1), 3);
 	for j=1:(size(sigma_mass2_err,1))
@@ -468,7 +467,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 		raw_output(j,3) = real(sigma_mass2_err(j, 2));
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.sg_stoch_oscil', num2str(2));
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 
 	
     raw_output = zeros(size(sigma_kuti_mass_err,1), 3);
@@ -479,7 +478,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.sg_stoch_kuti', num2str(1));
 
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 
 	raw_output = zeros(size(sigma_kuti2_mass_err,1), 3);
 	for j=1:(size(sigma_kuti2_mass_err,1))
@@ -489,7 +488,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.sg_stoch_ppp', num2str(1));
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
     
 	raw_output = zeros(size(sigma_kmi_mass_err,1), 3);
 	for j=1:(size(sigma_kmi_mass_err,1))
@@ -499,7 +498,7 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	full_fname = strcat(fname, '/spectrum2/effmass/effmass.sg_stoch_kmi', num2str(1));
 
-	save(full_fname, 'raw_output', '-ascii');
+	save(full_fname, 'raw_output', '-ascii', '-double');
 	
 end
 
