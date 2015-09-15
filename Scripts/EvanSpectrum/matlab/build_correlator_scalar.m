@@ -1,7 +1,8 @@
 % Update 08-17-2014, Fix vev issue sort of!
 % Update 08-20-2014, Read in flavor count, Ns, Nt from file.
 % Update 09-18-2014, Updated for SCC analysis. Do jackknifing right!
-% Update 01-17-2014, Save the dc and sg correlator to the corr directory.
+% Update 01-17-2015, Save the dc and sg correlator to the corr directory.
+% Update 09-15-2014, Use new loading interface.
 function build_correlator_scalar(fname, stoch_src, blocksize)
 
 	% Load ensemble info.
