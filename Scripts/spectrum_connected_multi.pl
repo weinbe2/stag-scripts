@@ -157,6 +157,9 @@ foreach my $params_ref (@ensemble_list)
 	
 	print "$direc $path\n"; 
 	
+	# Reset the disc counter.
+	$did_build_disc = 0;
+	
 	foreach my $state (@state_list)
 	{
 		print $state."\n";
