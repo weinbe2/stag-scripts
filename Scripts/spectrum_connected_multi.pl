@@ -304,7 +304,7 @@ foreach my $params_ref (@ensemble_list)
 			if ($plots == 1)
 			{
 				# If a multi-exp fit exists...
-				if (-f $main_dir."$path/$direc/spectrum2/multifits/multifits.$state")
+				if (-f "$path/$direc/spectrum2/multifits/multifits.$state")
 				{
 					$perl_command = $perl_command." ./EvanSpectrum/scripts/run_multiconn.pl -do plots -ensemble $path/$direc -state $state;";
 				}
