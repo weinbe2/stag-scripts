@@ -1612,7 +1612,17 @@ function visual_fit(blockval, num_elim)
 				
                     
 			case 22
-				flag = 0;
+                
+                % Ask first!
+				choice = questdlg('Are you sure you want to quit?', 'Check!', ...
+					'Yes', 'No', 'Yes');
+				
+				if (strcmp(choice, 'Yes'))
+					flag = 0;
+				end
+				
+				run render_update;
+
 		end
 		
 	end
