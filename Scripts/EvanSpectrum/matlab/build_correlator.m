@@ -81,6 +81,22 @@ function build_correlator(fname, state, blockval)
 		
 	% End outputting autocorrelation info.
 		
+	% Save binned, unfolded data.
+	[connected_blocks, num_blocks] = block_data(connected, 2, blocksize);
+	data = zeros(parse_Nt*num_blocks, 3);
+	for i=1:num_blocks
+		for j=1:parse_Nt
+			data((i-1)*parse_Nt+j, 1) = i;
+			data((i-1)*parse_Nt+j, 2) = j-1;
+			data((i-1)*parse_Nt+j, 3) = connected_blocks(j,i);
+		end
+	end
+	if (~exist(strcat(fname, '/spectrum2/corr_bin'), 'dir')) % create folder if it doesn't exist
+		mkdir(strcat(fname, '/spectrum2/corr_bin'));
+	end
+	full_fname = strcat(fname, '/spectrum2/corr_bin/corr_bin.', state);
+    save(full_fname, 'data', '-ascii', '-double');
+		
 	% Fold the correlator, appropriately handling if it's a baryon.
     connected = fold_data(connected, is_baryon);
 

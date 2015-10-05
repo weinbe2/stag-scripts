@@ -155,6 +155,21 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	full_fname = strcat(fname, '/spectrum2/sum/sum.sc_stoch');
     save(full_fname,'data','-ascii','-double');
 	
+	% Also, save unbinned values.
+	data = zeros(parse_Nt*num_blocks, 3);
+	for i=1:num_blocks
+		for j=1:parse_Nt
+			data((i-1)*parse_Nt+j, 1) = i;
+			data((i-1)*parse_Nt+j, 2) = j-1;
+			data((i-1)*parse_Nt+j, 3) = connected_blocks(j,i);
+		end
+	end
+	if (~exist(strcat(fname, '/spectrum2/corr_bin'), 'dir')) % create folder if it doesn't exist
+		mkdir(strcat(fname, '/spectrum2/corr_bin'));
+	end
+	full_fname = strcat(fname, '/spectrum2/corr_bin/corr_bin.sc_stoch');
+    save(full_fname, 'data', '-ascii', '-double');
+	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% Load and save sum for #D-C! %
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

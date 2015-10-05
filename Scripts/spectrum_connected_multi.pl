@@ -42,7 +42,7 @@ my $diagonly = 0;
 my $did_build_disc = 0;
 
 my $perl_command = ""; # for plotting
-my $matlab_command = "cd('../Scripts/EvanSpectrum/matlab');"; # for analysis.
+my $matlab_command = ""; # for analysis.
 
 $| = 1;
 
@@ -316,21 +316,52 @@ foreach my $params_ref (@ensemble_list)
 		}
 	}
 	
-	# Once all scripts have been made, run a texcopy. 
 }
 
+# Prepare a texcopy if we need to!
+my $ensemble_state_str = "";
+if ($tex == 1 || $multitex == 1)
+{
+	$ensemble_state_str = "-ensembles ";
+	foreach my $params_ref (@ensemble_list)
+	{
+		my %params = %{$params_ref};
+		my $direc = $params{ensemble};
+		$ensemble_state_str = $ensemble_state_str.$direc." ";
+	}
+	
+	$ensemble_state_str = $ensemble_state_str."-states ";
+	
+	foreach my $state (@state_list)
+	{
+		$ensemble_state_str = $ensemble_state_str.$state." ";
+	}
+}
+
+if ($tex == 1)
+{
+	$perl_command = $perl_command." ./spectrum_meas_texcopy.pl ".$ensemble_state_str.";";
+}
+
+if ($multitex == 1)
+{
+	$perl_command = $perl_command." ./spectrum_meas_multitexcopy.pl ".$ensemble_state_str.";";
+}
+
+
 # And run it!
-	print $matlab_command."\n";
 	print $perl_command."\n";
 
-if ($build == 1 || $analyze == 1)
+if ($matlab_command ne "")
 {
+	$matlab_command = "cd('../Scripts/EvanSpectrum/matlab');".$matlab_command."\n";
+	
 	my $matlab = "matlab -softwareopengl -nosplash -nodisplay -r \"$matlab_command quit;\"";
 
 	system($matlab);
 }
 
-if ($build == 1 || $plots == 1)
+if ($build == 1 || $plots == 1 || $tex == 1 || $multitex == 1)
 {
 
 	`$perl_command`;
