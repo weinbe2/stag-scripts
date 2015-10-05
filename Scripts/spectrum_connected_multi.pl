@@ -20,10 +20,18 @@ my @ensemble_list = ();
 my @state_list = ();
 my @todo_list = ();
 
+my @safe_states = ();
 # Load safe states from file.
 open(my $states_handle, "<./EvanSpectrum/states.txt");
-my @safe_states = <$states_handle>;
+@safe_states = <$states_handle>;
 close($states_handle);
+for (my $i=0;$i<@safe_states;$i++)
+{
+	# I don't know why I have to do this.
+	my @tmp_arr = split(' ', $safe_states[$i]);
+	$safe_states[$i] = $tmp_arr[0];
+	my $tmp2 = length($safe_states[$i]);
+}
 #my @safe_states = ("sc_stoch", "ps", "ps2", "sc", "ij", "i5", "ri5", "ris", "rij", "r0", "nu", "de", "rvt", "rpv", "dc_stoch", "dc_stoch_oscil", "dc_stoch_ppp", "sg_stoch", "dc_stoch_three", "sg_stoch_three", "dc_stoch_zcen", "sg_stoch_zcen");
 
 my @old_disconnected_filter = ("dc_stoch", "dc_stoch_oscil", "dc_stoch_ppp", "sg_stoch", "dc_stoch_three", "sg_stoch_three");

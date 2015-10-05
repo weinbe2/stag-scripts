@@ -27,3 +27,5 @@ dc_stoch_three
 sg_stoch_three
 dc_stoch_zcen
 sg_stoch_zcen
+sg_211
+sg_111

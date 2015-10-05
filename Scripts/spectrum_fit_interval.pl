@@ -103,8 +103,18 @@ if (!(-d "$path/$ensemble"."/spectrum2/fitparams"))
         `$command`;
 }
 
-# Next, make sure the state makes sense.
-my @states = ("ps", "ps2", "sc", "ij", "i5", "ri5", "ris", "rij", "r0", "nu", "de", "sc_stoch", "dc_stoch", "dc_stoch_oscil", "dc_stoch_ppp", "sg_stoch", "sg_111", "sg_211", "rvt", "rpv");
+my @states = ();
+# Load safe states from file.
+open(my $states_handle, "<./EvanSpectrum/states.txt");
+@states = <$states_handle>;
+close($states_handle);
+for (my $i=0;$i<@safe_states;$i++)
+{
+	# I don't know why I have to do this.
+	my @tmp_arr = split(' ', $states[$i]);
+	$states[$i] = $tmp_arr[0];
+	my $tmp2 = length($states[$i]);
+}
 
 # 2015-02-09 Do a check for a wf_state
 my $check_state = "";
