@@ -365,7 +365,7 @@ if ($multitex == 1)
 
 if ($matlab_command ne "")
 {
-	$matlab_command = "cd('../Scripts/EvanSpectrum/matlab');".$matlab_command."\n";
+	$matlab_command = "cd('../Scripts/EvanSpectrum/matlab');".$matlab_command;
 	
 	my $matlab = "matlab -softwareopengl -nosplash -nodisplay -r \"$matlab_command quit;\"";
 
