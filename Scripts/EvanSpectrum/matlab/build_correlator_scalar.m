@@ -243,6 +243,76 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	full_fname = strcat(fname, '/spectrum2/corr/corr.sg_stoch');
     save(full_fname, 'conn_output', '-ascii', '-double');
 	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% New: We also save the finite differences, unbinned and binned. %
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	% First, D!
+	tmp_last = disc_corr_fixed(parse_Nt, :) - disc_corr_fixed(1,:);
+	for tmp_i=1:parse_Nt-1
+		disc_corr_fixed(tmp_i,:) = disc_corr_fixed(tmp_i,:)-disc_corr_fixed(tmp_i+1,:);
+	end
+	disc_corr_fixed(parse_Nt,:) = tmp_last;
+	
+	% And next, C!
+	tmp_last = disc_corr_fixed(parse_Nt, :) - disc_corr_fixed(1,:);
+	for tmp_i=1:parse_Nt-1
+		disc_corr_fixed(tmp_i,:) = disc_corr_fixed(tmp_i,:)-disc_corr_fixed(tmp_i+1,:);
+	end
+	disc_corr_fixed(parse_Nt,:) = tmp_last;
+	
+	conn_output = zeros(num_data_in*parse_Nt_in, 3);
+    for i=1:parse_Nt_in
+        for j=1:num_data_in
+			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
+            conn_output((j-1)*parse_Nt_in+i, 2) = i-0.5;
+            conn_output((j-1)*parse_Nt_in+i, 3) = disc_corr_fixed(i,j);
+		end
+	end
+	full_fname = strcat(fname, '/spectrum2/corr/corr.dc_stoch_dt');
+    save(full_fname, 'conn_output', '-ascii', '-double');
+	
+	conn_output = zeros(num_data_in*parse_Nt_in, 3);
+    for i=1:parse_Nt_in
+        for j=1:num_data_in
+			conn_output((j-1)*parse_Nt_in+i, 1) = config_nums_conn(1,j);
+            conn_output((j-1)*parse_Nt_in+i, 2) = i-0.5;
+            conn_output((j-1)*parse_Nt_in+i, 3) = sigma_corr_fixed(i,j);
+		end
+	end
+	full_fname = strcat(fname, '/spectrum2/corr/corr.sg_stoch_dt');
+    save(full_fname, 'conn_output', '-ascii', '-double');
+	
+	% Next bins and such.
+	[connected_blocks, num_blocks] = block_data(disc_corr_fixed, 2, blocksize);
+	data = zeros(parse_Nt*num_blocks, 3);
+	for i=1:num_blocks
+		for j=1:parse_Nt
+			data((i-1)*parse_Nt+j, 1) = i;
+			data((i-1)*parse_Nt+j, 2) = j-0.5;
+			data((i-1)*parse_Nt+j, 3) = connected_blocks(j,i);
+		end
+	end
+	if (~exist(strcat(fname, '/spectrum2/corr_bin'), 'dir')) % create folder if it doesn't exist
+		mkdir(strcat(fname, '/spectrum2/corr_bin'));
+	end
+	full_fname = strcat(fname, '/spectrum2/corr_bin/corr_bin.dc_stoch_dt');
+    save(full_fname, 'data', '-ascii', '-double');
+	
+	% Next bins and such.
+	[connected_blocks, num_blocks] = block_data(sigma_corr_fixed, 2, blocksize);
+	data = zeros(parse_Nt*num_blocks, 3);
+	for i=1:num_blocks
+		for j=1:parse_Nt
+			data((i-1)*parse_Nt+j, 1) = i;
+			data((i-1)*parse_Nt+j, 2) = j-0.5;
+			data((i-1)*parse_Nt+j, 3) = connected_blocks(j,i);
+		end
+	end
+	full_fname = strcat(fname, '/spectrum2/corr_bin/corr_bin.sg_stoch_dt');
+    save(full_fname, 'data', '-ascii', '-double');
+	
+	
 	%%%%%%%%%%%%%%
 	% ppp stuff. %
 	%%%%%%%%%%%%%%
