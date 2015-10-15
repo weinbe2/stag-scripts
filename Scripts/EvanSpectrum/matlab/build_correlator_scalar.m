@@ -255,11 +255,11 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	disc_corr_fixed(parse_Nt,:) = tmp_last;
 	
 	% And next, C!
-	tmp_last = disc_corr_fixed(parse_Nt, :) - disc_corr_fixed(1,:);
+	tmp_last = sigma_corr_fixed(parse_Nt, :) - sigma_corr_fixed(1,:);
 	for tmp_i=1:parse_Nt-1
-		disc_corr_fixed(tmp_i,:) = disc_corr_fixed(tmp_i,:)-disc_corr_fixed(tmp_i+1,:);
+		sigma_corr_fixed(tmp_i,:) = sigma_corr_fixed(tmp_i,:)-sigma_corr_fixed(tmp_i+1,:);
 	end
-	disc_corr_fixed(parse_Nt,:) = tmp_last;
+	sigma_corr_fixed(parse_Nt,:) = tmp_last;
 	
 	conn_output = zeros(num_data_in*parse_Nt_in, 3);
     for i=1:parse_Nt_in
