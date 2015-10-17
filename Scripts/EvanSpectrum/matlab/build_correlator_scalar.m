@@ -299,6 +299,19 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	full_fname = strcat(fname, '/spectrum2/corr_bin/corr_bin.dc_stoch_dt');
     save(full_fname, 'data', '-ascii', '-double');
 	
+	connected_sum = mean(connected_blocks, 2);
+    connected_jack = jackknife_bins(connected_blocks, 2, 1);
+    [connected_cov_mat, connected_err] = errors_jackknife(connected_sum, connected_jack);
+	
+	data = zeros(parse_Nt/2,3);
+    for i=1:(parse_Nt/2)
+        data(i,1) = i-0.5;
+        data(i,2) = connected_sum(i);
+        data(i,3) = connected_err(i);
+    end
+	full_fname = strcat(fname, '/spectrum2/sum/sum.dc_stoch_dt');
+    save(full_fname,'data','-ascii', '-double');
+	
 	% Next bins and such.
 	[connected_blocks, num_blocks] = block_data(sigma_corr_fixed, 2, blocksize);
 	data = zeros(parse_Nt*num_blocks, 3);
@@ -311,6 +324,20 @@ function build_correlator_scalar(fname, stoch_src, blocksize)
 	end
 	full_fname = strcat(fname, '/spectrum2/corr_bin/corr_bin.sg_stoch_dt');
     save(full_fname, 'data', '-ascii', '-double');
+	
+	connected_sum = mean(connected_blocks, 2);
+    connected_jack = jackknife_bins(connected_blocks, 2, 1);
+    [connected_cov_mat, connected_err] = errors_jackknife(connected_sum, connected_jack);
+	
+	data = zeros(parse_Nt/2,3);
+    for i=1:(parse_Nt/2)
+        data(i,1) = i-0.5;
+        data(i,2) = connected_sum(i);
+        data(i,3) = connected_err(i);
+    end
+	full_fname = strcat(fname, '/spectrum2/sum/sum.sg_stoch_dt');
+    save(full_fname,'data','-ascii', '-double');
+	
 	
 	
 	%%%%%%%%%%%%%%
