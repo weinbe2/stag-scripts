@@ -225,7 +225,15 @@ foreach my $params_ref (@ensemble_list)
 				}
 				else
 				{
-					$perl_command = $perl_command." ./EvanSpectrum/scripts/run_connected.pl $path/$direc $state;";
+					# If a multi-exp fit exists...
+					if (-f "$path/$direc/spectrum2/multifits/multifits.$state")
+					{
+						$perl_command = $perl_command." ./EvanSpectrum/scripts/run_multiconn.pl -do plots -ensemble $path/$direc -state $state;";
+					}
+					else # business as usual.
+					{
+						$perl_command = $perl_command." ./EvanSpectrum/scripts/run_connected.pl $path/$direc $state;";
+					}
 				}
 			}
 		}

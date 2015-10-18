@@ -37,6 +37,12 @@ Connected measurements used :ACT_MEAS: measurements separated by :FREQ_MEAS: tra
  :STOCH_COMM:$aM_{a_0}^{pt}$ & $:SC_STOCH_DIR_MASS:$ & From point source. \\
 :NU_COMM:\hline
  :NU_COMM:$aM_{N+}$ & $:NU_DIR_MASS:$ & From wall source. \\
+:SCALAR_COMM:\hline
+ :SCALAR_COMM:$aM_{0^{++}}$ & $:DC_STOCH_DIR_MASS:$ & From stochastic source, just $D$. \\
+:SCALAR_COMM:\hline
+ :SCALAR_COMM:$aM_{0^{++}}$ & $:SG_STOCH_DIR_MASS:$ & From stochastic source, $ND-C$, partner $\eta_{sc}$. \\
+:SCALAR_COMM:\hline
+ :SCALAR_COMM:$aM_{\eta_{sc}}$ & $:SG_STOCH_OSC_MASS:$ & From stochastic source, $ND-C$. \\
 \hline
 \end{tabular}
 \caption{Overview of fit values.}
@@ -513,4 +519,108 @@ This is the $\mathbf{8}$-rep Nucleon (positive and negative parity), measured wi
 
 \clearpage
 :NU_YES_END:
+
+:STOCH_YES_BEGIN:
+\subsubsection{Singlet Scalar and Partner sc Eta, Stochastic Source, Disc only}
+
+Ensemble: :ENSEMBLE:
+
+This is the $1 \otimes 1$ singlet taste singlet scalar, parity partner singlet $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ eta, measured with a stochastic source. This uses just the disconnected correlator. Preferred $t_{min}$ is :DC_STOCH_TMIN: with :DC_STOCH_NDIR: direct, :DC_STOCH_NOSC: oscillating states, consistent $t_{max}$ of :DC_STOCH_TMAX: was used for all fits.
+
+\begin{multicols}{2}
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-dc_stoch.pdf}
+\caption{Non-linear fit mass for the $0^{++}$ with partner sc taste split eta from a point source.}
+\end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-dc_stoch-pv.pdf}
+\caption{$p$ value for a non-linear fit of the $0^{++}$ with partner sc taste split eta from a point source.}
+\end{figure}
+\end{multicols}
+
+\begin{multicols}{2}
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-dc_stoch-dir.pdf}
+\caption{Zoom in on ground state mass of the $0^{++}$ from a point source.}
+\end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-dc_stoch-osc.pdf}
+\caption{Zoom in on ground state mass of the sc taste split eta from a point source. {\textbf{Note:}} Since this is just the disconnected, the oscillating terms empirically largely cancel. This should not be trusted.}
+\end{figure}
+\end{multicols}
+
+\begin{multicols}{2}
+\begin{figure}[H]
+\centering
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.dc_stoch}
+\caption{Preferred fit coefficients.}
+\end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-dc_stoch-corr.pdf}
+\caption{The $0^{++}$ with partner sc taste split eta correlator from a point source.}
+\end{figure}
+\end{multicols}
+
+\clearpage
+
+\subsubsection{Singlet Scalar and Partner sc Eta, Stochastic Source, ND-C}
+
+Ensemble: :ENSEMBLE:
+
+This is the $1 \otimes 1$ singlet taste singlet scalar, parity partner singlet $\gamma_4 \gamma_5 \otimes \gamma_4 \gamma_5$ eta, measured with a stochastic source. This uses the proper $ND-C$ form. Preferred $t_{min}$ is :SG_STOCH_TMIN: with :SG_STOCH_NDIR: direct, :SG_STOCH_NOSC: oscillating states, consistent $t_{max}$ of :SG_STOCH_TMAX: was used for all fits.
+
+\begin{multicols}{2}
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sg_stoch.pdf}
+\caption{Non-linear fit mass for the $0^{++}$ with partner sc taste split eta from a point source.}
+\end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sg_stoch-pv.pdf}
+\caption{$p$ value for a non-linear fit of the $0^{++}$ with partner sc taste split eta from a point source.}
+\end{figure}
+\end{multicols}
+
+\begin{multicols}{2}
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sg_stoch-dir.pdf}
+\caption{Zoom in on ground state mass of the $0^{++}$ from a point source.}
+\end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sg_stoch-osc.pdf}
+\caption{Zoom in on ground state mass of the sc taste split eta from a point source. }
+\end{figure}
+\end{multicols}
+
+\begin{multicols}{2}
+\begin{figure}[H]
+\centering
+\scriptsize
+\input{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/tex/multitable.sg_stoch}
+\caption{Preferred fit coefficients.}
+\end{figure}
+\columnbreak
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.5in]{/projectnb/qcd/Staggered/:ENSEMBLE:/spectrum2/multifits/plots/multifits-sg_stoch-corr.pdf}
+\caption{The $0^{++}$ with partner sc taste split eta correlator from a point source.}
+\end{figure}
+\end{multicols}
+
+\clearpage
+:STOCH_YES_END:
 

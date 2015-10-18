@@ -124,6 +124,8 @@ my $path = "/projectnb/qcd/Staggered/Scripts";
 my $dir_label = "";
 my $osc_label = "";
 my $is_fpi = 0;
+my $is_diff = 0;
+
 switch ($state)
 {
 	case "ps" {
@@ -154,6 +156,16 @@ switch ($state)
 	case "nu" {
 		$dir_label = "M_{N+}";
 		$osc_label = "M_{N-}";
+	}
+	case "dc_stoch" {
+		$dir_label = "M_{0^{++}}";
+		$osc_label = "M_{\\\\eta}";
+		$is_diff = 1;
+	}
+	case "sg_stoch" {
+		$dir_label = "M_{0^{++}}";
+		$osc_label = "M_{\\\\eta}";
+		$is_diff = 1;
 	}
 	else: {
 		$dir_label = "M_{dir}";
@@ -466,12 +478,18 @@ close($outfile5);
 # Prepare the fit curve now! #
 ##############################
 
+print "Made it to fit curve.\n";
+
 my $curve_line = "";
 for (my $j = 0; $j < $pref_num_dir; $j++)
 {
 	if ($state eq "nu" || $state eq "de")
 	{
 		$curve_line = $curve_line."+".$cdc_list[$j]."*(exp(".$mdc_list[$j]."*(".($ensemble_params{T}/2)."-x))-cos(3.1415926535*x)*exp(-".$mdc_list[$j]."*(".($ensemble_params{T}/2)."-x)))/2.0";
+	}
+	elsif ($is_diff == 1)
+	{
+		$curve_line = $curve_line."+".$cdc_list[$j]."*cosh(".$mdc_list[$j]."*(".($ensemble_params{T}/2)."-x))-".$cdc_list[$j]."*cosh(".$mdc_list[$j]."*(".($ensemble_params{T}/2)."-(x+1)))";
 	}
 	else
 	{
@@ -484,6 +502,10 @@ for (my $j = 0; $j < $pref_num_osc; $j++)
 	if ($state eq "nu" || $state eq "de")
 	{
 		$curve_line = $curve_line."+".$coc_list[$j]."*cos(3.1415926535*x)*(exp(".$moc_list[$j]."*(".($ensemble_params{T}/2)."-x))-cos(3.1415926535*x)*exp(-".$moc_list[$j]."*(".($ensemble_params{T}/2)."-x)))/2.0";
+	}
+	elsif ($is_diff == 1)
+	{
+		$curve_line = $curve_line."+".$coc_list[$j]."*cos(3.1415926535*x)*cosh(".$moc_list[$j]."*(".($ensemble_params{T}/2)."-x))-".$coc_list[$j]."*cos(3.1415926535*(x+1))*cosh(".$moc_list[$j]."*(".($ensemble_params{T}/2)."-(x+1)))";;
 	}
 	else
 	{
@@ -502,10 +524,10 @@ if ($err_osc > 0.01)
 	$err_osc = 0.01;
 }
 
-# Before building plots, if it exists, grab the single-state fits.
+# Before building plots, if it exists, grab the single-state fits, unless it's the 0++.
 my $singlefit_flag = 0;
 my @singlefit_file;
-if (-f "$path/$relpath/$direc/spectrum2/fits/fit_new.$state")
+if (-f "$path/$relpath/$direc/spectrum2/fits/fit_new.$state" && ($state ne 'dc_stoch' && $state ne 'sg_stoch'))
 {
 	open (my $fit_handle, "<$path/$relpath/$direc/spectrum2/fits/fit_new.$state");
 	@singlefit_file = <$fit_handle>;
@@ -642,10 +664,24 @@ if ($singlefit_flag == 1)
 # Copy the correlator and learn something about its range.
 ############################################################
 
+print "Made it to corr copy.\n";
+
 # First, load the sum file.
-open (my $corr_handle, "<$path/$relpath/$direc/spectrum2/sum/sum.$state");
-my @corr_contents = <$corr_handle>;
-close($corr_handle);
+
+# If it's a 0++ file, we load something a little different.
+my @corr_contents = ();
+if ($is_diff)
+{
+	open (my $corr_handle, "<$path/$relpath/$direc/spectrum2/sum/sum.$state"."_dt");
+	@corr_contents = <$corr_handle>;
+	close($corr_handle);
+}
+else
+{
+	open (my $corr_handle, "<$path/$relpath/$direc/spectrum2/sum/sum.$state");
+	@corr_contents = <$corr_handle>;
+	close($corr_handle);
+}
 
 # Split things into tmin/tmax/whatnot.
 my @corr_t = ();
@@ -657,6 +693,12 @@ my $min_corr_val = 1e100;
 foreach my $corr_line (@corr_contents)
 {
 	my @temp_splitter = split(' ', $corr_line);
+	
+	if ($is_diff == 1)
+	{
+		$temp_splitter[0] = $temp_splitter[0] - 0.5; # make plotting easier.
+	}
+	
 	push(@corr_t, $temp_splitter[0]);
 	push(@corr_val, $temp_splitter[1]);
 	push(@corr_err, $temp_splitter[2]);
@@ -1006,8 +1048,14 @@ print $outfile3 "plot \"./EvanSpectrum/scripts/tmp_space/corr.dat\" using 1:2:3 
 print $outfile3 "   $curve_line ls 2 notitle\n";
 print $outfile3 "set output\n";
 
+close($outfile3);
+
+print "About to run gnuplot.\n";
 
 `gnuplot -e "load \\"EvanSpectrum/scripts/tmp_space/plots.plt\\""`; 
+
+print "Ran gnuplot.\n";
+
 #`cd ./EvanSpectrum/scripts/tmp_space`;
 `epstopdf ./EvanSpectrum/scripts/tmp_space/allstates-inc.eps`;
 `pdflatex ./EvanSpectrum/scripts/tmp_space/allstates.tex`;
@@ -1017,6 +1065,8 @@ $command = "mv allstates.pdf $path/$relpath/$direc/spectrum2/multifits/plots/mul
 `$command`;
 $command = "mv allstates.png $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state".".png";
 `$command`;
+
+print "Copied all states plot.\n";
 
 if ($num_dir > 0)
 {
@@ -1028,6 +1078,8 @@ if ($num_dir > 0)
 	`$command`;
 	$command = "mv dirstate.png $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state"."-dir.png";
 	`$command`;
+	
+	print "Copied direct plot.\n";
 }
 
 if ($num_osc > 0 || $is_fpi == 1)
@@ -1040,6 +1092,8 @@ if ($num_osc > 0 || $is_fpi == 1)
 	`$command`;
 	$command = "mv oscstate.png $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state"."-osc.png";
 	`$command`;
+	
+	print "Copied oscillating plot.\n";
 }
 `epstopdf ./EvanSpectrum/scripts/tmp_space/pvalue-inc.eps`;
 `pdflatex ./EvanSpectrum/scripts/tmp_space/pvalue.tex`;
@@ -1048,6 +1102,7 @@ $command = "mv pvalue.pdf $path/$relpath/$direc/spectrum2/multifits/plots/multif
 `$command`;
 $command = "mv pvalue.png $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state"."-pv.png";
 `$command`;
+print "Copied pvalue plot.\n";
 
 `epstopdf ./EvanSpectrum/scripts/tmp_space/corr-inc.eps`;
 `pdflatex ./EvanSpectrum/scripts/tmp_space/corr.tex`;
@@ -1056,6 +1111,8 @@ $command = "mv corr.pdf $path/$relpath/$direc/spectrum2/multifits/plots/multifit
 `$command`;
 $command = "mv corr.png $path/$relpath/$direc/spectrum2/multifits/plots/multifits-$state"."-corr.png";
 `$command`;
+
+print "Copied correlator plot.\n";
 
 `rm *.aux`;
 `rm *.log`;

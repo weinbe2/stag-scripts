@@ -242,10 +242,13 @@ foreach my $params_ref (@ensemble_list)
 	$sed_commands{'RIJ_YES_END'} = "\\\\end{comment}";
 	$sed_commands{'TASTE_YES_BEGIN'} = "\\\\begin{comment}";
 	$sed_commands{'TASTE_YES_END'} = "\\\\end{comment}";
+	$sed_commands{'SCALAR_YES_BEGIN'} = "\\\\begin{comment}";
+	$sed_commands{'SCALAR_YES_END'} = "\\\\end{comment}";
 	$sed_commands{'STOCH_COMM'} = "%";
 	$sed_commands{'NU_COMM'} = "%";
 	$sed_commands{'RIJ_COMM'} = "%";
 	$sed_commands{'TASTE_COMM'} = "%";
+	$sed_commands{'SCALAR_COMM'} = "%";
 	
 	# Cool! Next, we need to go through all the inputed states and grab their t_min, t_max, and blocksize. (Item 2, 4, 5).
 
@@ -264,6 +267,12 @@ foreach my $params_ref (@ensemble_list)
 	my $esc = 0;
 	my $cscs = 0;
 	my $escs = 0;
+	
+	# Save 0++ mass from each source.
+	my $cdc = 0;
+	my $edc = 0;
+	my $csg = 0;
+	my $esg = 0;
 
 	foreach my $indiv_state (@state_list)
 	{
@@ -304,6 +313,13 @@ foreach my $params_ref (@ensemble_list)
 				$sed_commands{'TASTE_YES_BEGIN'} = "";
 				$sed_commands{'TASTE_YES_END'} = "";
 				$sed_commands{'TASTE_COMM'} = "";
+			}
+			
+			if ($indiv_state eq "dc_stoch" || $indiv_state eq "sg_stoch")
+			{
+				$sed_commands{'SCALAR_YES_BEGIN'} = "";
+				$sed_commands{'SCALAR_YES_END'} = "";
+				$sed_commands{'SCALAR_COMM'} = "";
 			}
 			
 			# Next, make sure a fitparams exists. 
@@ -355,6 +371,17 @@ foreach my $params_ref (@ensemble_list)
 				$cscs = $cdir;
 				$escs = $edir;
 			}
+			if ($indiv_state eq "dc_stoch")
+			{
+				$cdc = $cdir;
+				$edc = $edir;
+			}
+			if ($indiv_state eq "sg_stoch")
+			{
+				$csg = $cdir;
+				$esg = $edir;
+			}
+			
 			
 			# Verified!
 			#printf("State $indiv_state has tmin $tmin, tmax $tmax, and blocksize $blocksize\n");
@@ -414,6 +441,28 @@ foreach my $params_ref (@ensemble_list)
 	else
 	{
 		$notify_string = $notify_string."There are no stochastic \$a_0\$ measurements."
+	}
+	
+	# Compare 0++ masses.
+	my $zpp_dev = 0;
+	if ($cdc != 0)
+	{
+		if ($cdc > $csg)
+		{
+			$zpp_dev = ceil(($cdc-$csg)/($edc+$esg));
+		}
+		else
+		{
+			$zpp_dev = ceil(($csg-$cdc)/($esg+$edc));
+		}
+		if ($zpp_dev > 2)
+		{
+			$notify_string = $notify_string."The \$0^{++}\$ masses agree at only $zpp_dev sigma, which is large.";
+		}
+	}
+	else
+	{
+		$notify_string = $notify_string."There are no stochastic \$0++\$ measurements."
 	}
 	
 	if ($notify_string eq "")
