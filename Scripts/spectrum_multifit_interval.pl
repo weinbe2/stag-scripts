@@ -109,7 +109,7 @@ my @states = ();
 open(my $states_handle, "<./EvanSpectrum/states.txt");
 @states = <$states_handle>;
 close($states_handle);
-for (my $i=0;$i<@safe_states;$i++)
+for (my $i=0;$i<@states;$i++)
 {
 	# I don't know why I have to do this.
 	my @tmp_arr = split(' ', $states[$i]);
