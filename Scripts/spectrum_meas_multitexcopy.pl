@@ -22,7 +22,7 @@ my @state_list = ();
 my $file_handle;
 
 # A list of safe states. These are only 'connected' measurements.
-my @safe_states = ("ps", "ps2", "sc", "ij", "i5", "ri5", "ris", "rij", "r0", "nu", "de", "rvt", "rpv", "sc_stoch");
+my @safe_states = ("ps", "ps2", "sc", "ij", "i5", "ri5", "ris", "rij", "r0", "nu", "de", "rvt", "rpv", "sc_stoch", "dc_stoch", "sg_stoch");
 
 # Loop over all arguments.
 for (my $i = 0; $i < @ARGV; $i++)

@@ -38,9 +38,9 @@ Connected measurements used :ACT_MEAS: measurements separated by :FREQ_MEAS: tra
 :NU_COMM:\hline
  :NU_COMM:$aM_{N+}$ & $:NU_DIR_MASS:$ & From wall source. \\
 :SCALAR_COMM:\hline
- :SCALAR_COMM:$aM_{0^{++}}$ & $:DC_STOCH_DIR_MASS:$ & From stochastic source, just $D$. \\
+ :SCALAR_COMM:$aM_{0^{++}}^{D}$ & $:DC_STOCH_DIR_MASS:$ & From stochastic source, just $D$. \\
 :SCALAR_COMM:\hline
- :SCALAR_COMM:$aM_{0^{++}}$ & $:SG_STOCH_DIR_MASS:$ & From stochastic source, $ND-C$, partner $\eta_{sc}$. \\
+ :SCALAR_COMM:$aM_{0^{++}}^{ND-C}$ & $:SG_STOCH_DIR_MASS:$ & From stochastic source, $ND-C$, partner $\eta_{sc}$. \\
 :SCALAR_COMM:\hline
  :SCALAR_COMM:$aM_{\eta_{sc}}$ & $:SG_STOCH_OSC_MASS:$ & From stochastic source, $ND-C$. \\
 \hline
@@ -520,7 +520,7 @@ This is the $\mathbf{8}$-rep Nucleon (positive and negative parity), measured wi
 \clearpage
 :NU_YES_END:
 
-:STOCH_YES_BEGIN:
+:SCALAR_YES_BEGIN:
 \subsubsection{Singlet Scalar and Partner sc Eta, Stochastic Source, Disc only}
 
 Ensemble: :ENSEMBLE:
@@ -622,5 +622,5 @@ This is the $1 \otimes 1$ singlet taste singlet scalar, parity partner singlet $
 \end{multicols}
 
 \clearpage
-:STOCH_YES_END:
+:SCALAR_YES_END:
 

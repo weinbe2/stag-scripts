@@ -585,7 +585,7 @@ if ($num_osc > 0)
 		foreach my $a_row (@fit_info)
 		{
 			my @the_row = @{$a_row};
-			if ($the_row[OSCMASS1+4*$i] > 1e-6)
+			if ($the_row[OSCMASS1+4*$i] > 1e-10)
 			{
 				print $outfile3 $the_row[TMIN]." ".$the_row[OSCMASS1+4*$i]." ".$the_row[OSCMASS1+4*$i+1]."\n";
 			}
