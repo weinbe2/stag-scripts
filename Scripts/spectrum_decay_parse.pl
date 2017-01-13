@@ -326,16 +326,50 @@ foreach my $file (@allfiles)
       my @indiv_a_cc_x = ();
       my @indiv_a_cc_y = ();
       my @indiv_a_cc_z = ();
+	  
+	  my $local_good_flag = 1;
 		
 		for (my $i = 0; $i < $nt; $i++)
 		{
 			chomp($pion_lines[$i]);
+			chomp($ll_lines[$i]);
+			chomp($cc_lines[$i]);
+			
+			# Check to make sure there are the right number of columns.
+			
 			my @temparray = split(' ', $pion_lines[$i]);
+			my $tempsize = @temparray;
+			if ($tempsize != 7 && $local_good_flag == 1)
+			{
+				print "NOPE: $orig_n_config decay pion\n";
+				$local_good_flag = 0;
+				next;
+			}
+			
+			@temparray = split(' ', $ll_lines[$i]);
+			$tempsize = @temparray;
+			if ($tempsize != 17 && $local_good_flag == 1)
+			{
+				print "NOPE: $orig_n_config decay local local\n";
+				$local_good_flag = 0;
+				next;
+			}
+			
+			@temparray = split(' ', $ll_lines[$i]);
+			$tempsize = @temparray;
+			if ($tempsize != 17 && $local_good_flag == 1)
+			{
+				print "NOPE: $orig_n_config decay consv consv\n";
+				$local_good_flag = 0;
+				next;
+			}
+			
+			@temparray = split(' ', $pion_lines[$i]);
 			push(@indiv_p_ll, "$i $temparray[1]\n");
 			push(@indiv_p_lc, "$i $temparray[3]\n");
 			push(@indiv_p_cc, "$i $temparray[5]\n");
 			
-			chomp($ll_lines[$i]);
+			
 			@temparray = split(' ', $ll_lines[$i]);
 			push(@indiv_r_ll, "$i $temparray[1]\n");
 			push(@indiv_r_ll_x, "$i $temparray[3]\n");
@@ -346,7 +380,7 @@ foreach my $file (@allfiles)
 			push(@indiv_a_ll_y, "$i $temparray[13]\n");
 			push(@indiv_a_ll_z, "$i $temparray[15]\n");
 			
-			chomp($cc_lines[$i]);
+			
 			@temparray = split(' ', $cc_lines[$i]);
 			push(@indiv_r_cc, "$i $temparray[1]\n");
 			push(@indiv_r_cc_x, "$i $temparray[3]\n");
@@ -359,74 +393,79 @@ foreach my $file (@allfiles)
 			
 		}
 		
-		$p_ll[$n_config] = \@indiv_p_ll;
-      $p_lc[$n_config] = \@indiv_p_lc;
-      $p_cc[$n_config] = \@indiv_p_cc;
-      $r_ll[$n_config] = \@indiv_r_ll;
-      $r_ll_x[$n_config] = \@indiv_r_ll_x;
-      $r_ll_y[$n_config] = \@indiv_r_ll_y;
-      $r_ll_z[$n_config] = \@indiv_r_ll_z;
-      $r_cc[$n_config] = \@indiv_r_cc;
-      $r_cc_x[$n_config] = \@indiv_r_cc_x;
-      $r_cc_y[$n_config] = \@indiv_r_cc_y;
-      $r_cc_z[$n_config] = \@indiv_r_cc_z;
-      $a_ll[$n_config] = \@indiv_a_ll;
-      $a_ll_x[$n_config] = \@indiv_a_ll_x;
-      $a_ll_y[$n_config] = \@indiv_a_ll_y;
-      $a_ll_z[$n_config] = \@indiv_a_ll_z;
-      $a_cc[$n_config] = \@indiv_a_cc;
-      $a_cc_x[$n_config] = \@indiv_a_cc_x;
-      $a_cc_y[$n_config] = \@indiv_a_cc_y;
-      $a_cc_z[$n_config] = \@indiv_a_cc_z;
-	
-
-		if (@m_time_lines == 2)
+		if ($local_good_flag == 1)
 		{
-			my @begin_split = split(' ', $m_time_lines[0]);
-			my @end_split = split(' ', $m_time_lines[1]);
+		
+			$p_ll[$n_config] = \@indiv_p_ll;
+			$p_lc[$n_config] = \@indiv_p_lc;
+			$p_cc[$n_config] = \@indiv_p_cc;
+			$r_ll[$n_config] = \@indiv_r_ll;
+			$r_ll_x[$n_config] = \@indiv_r_ll_x;
+			$r_ll_y[$n_config] = \@indiv_r_ll_y;
+			$r_ll_z[$n_config] = \@indiv_r_ll_z;
+			$r_cc[$n_config] = \@indiv_r_cc;
+			$r_cc_x[$n_config] = \@indiv_r_cc_x;
+			$r_cc_y[$n_config] = \@indiv_r_cc_y;
+			$r_cc_z[$n_config] = \@indiv_r_cc_z;
+			$a_ll[$n_config] = \@indiv_a_ll;
+			$a_ll_x[$n_config] = \@indiv_a_ll_x;
+			$a_ll_y[$n_config] = \@indiv_a_ll_y;
+			$a_ll_z[$n_config] = \@indiv_a_ll_z;
+			$a_cc[$n_config] = \@indiv_a_cc;
+			$a_cc_x[$n_config] = \@indiv_a_cc_x;
+			$a_cc_y[$n_config] = \@indiv_a_cc_y;
+			$a_cc_z[$n_config] = \@indiv_a_cc_z;
 
-			my @begin_break = split(':', $begin_split[5]);
-			my @end_break = split(':', $end_split[5]);
 
-			# Get a difference of seconds.
-			my $begin_sec = $begin_break[2];
-			my $begin_min = $begin_break[1];
-			my $begin_hrs = $begin_break[0];
-			my $end_sec = $end_break[2];
-			my $end_min = $end_break[1];
-			my $end_hrs = $end_break[0];
-
-			my $diff_sec = $end_sec - $begin_sec;
-			my $diff_min = $end_min - $begin_min;
-			my $diff_hrs = $end_hrs - $begin_hrs;
-
-			if ($diff_sec < 0)
+			if (@m_time_lines == 2)
 			{
-				$diff_min -= 1;
-				$diff_sec += 60;
+				my @begin_split = split(' ', $m_time_lines[0]);
+				my @end_split = split(' ', $m_time_lines[1]);
+
+				my @begin_break = split(':', $begin_split[5]);
+				my @end_break = split(':', $end_split[5]);
+
+				# Get a difference of seconds.
+				my $begin_sec = $begin_break[2];
+				my $begin_min = $begin_break[1];
+				my $begin_hrs = $begin_break[0];
+				my $end_sec = $end_break[2];
+				my $end_min = $end_break[1];
+				my $end_hrs = $end_break[0];
+
+				my $diff_sec = $end_sec - $begin_sec;
+				my $diff_min = $end_min - $begin_min;
+				my $diff_hrs = $end_hrs - $begin_hrs;
+
+				if ($diff_sec < 0)
+				{
+					$diff_min -= 1;
+					$diff_sec += 60;
+				}
+
+				if ($diff_min < 0)
+				{
+					$diff_hrs -= 1;
+					$diff_min += 60;
+				}
+
+				if ($diff_hrs < 0)
+				{
+					$diff_hrs += 24;
+				}
+
+				my $diff_time = 60*60*$diff_hrs + 60*$diff_min + $diff_sec;
+
+				$m_times[$n_config] = $diff_time." ".$machine;
+				#print $begin_split[5]." ".$end_split[5]."\n";
+
+				#print $diff_time."\n";
+			}
+			else
+			{
+				$m_times[$n_config] = "0 ".$machine;
 			}
 
-			if ($diff_min < 0)
-			{
-				$diff_hrs -= 1;
-				$diff_min += 60;
-			}
-
-			if ($diff_hrs < 0)
-			{
-				$diff_hrs += 24;
-			}
-
-			my $diff_time = 60*60*$diff_hrs + 60*$diff_min + $diff_sec;
-
-			$m_times[$n_config] = $diff_time." ".$machine;
-			#print $begin_split[5]." ".$end_split[5]."\n";
-
-			#print $diff_time."\n";
-		}
-		else
-		{
-			$m_times[$n_config] = "0 ".$machine;
 		}
 	}
 

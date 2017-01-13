@@ -1,4 +1,4 @@
-#! /usr/bin/perl 
+#! /usr/bin/perl -w 
 use warnings;
 use strict;
 use POSIX;
@@ -307,18 +307,46 @@ for (my $i = 0; $i < @m_pbp; $i++)
 {
    if (exists $m_pbp[$i])
    {
-      foreach my $line (@{$m_pbp[$i]})
-      {
-         print $pbpfile ($i*$sep+$start)." ".$line."\n";
-      }
       
-      foreach my $line (@{$m_conn[$i]})
-      {
-         print $connfile ($i*$sep+$start)." ".$line."\n";
-      }
+	  my $good_flag = 1;
+	  foreach my $line (@{$m_pbp[$i]})
+	  {
+	    my @tmp = split('\t', $line);
+		my $tmp_size = @tmp;
+		if ($tmp_size != 4 && $good_flag == 1)
+		{
+		  $good_flag = 0;
+		  print "Nope! ".($i*$sep+$start)." disc pbppart\n";
+		}
+	  }
+	  
+	  foreach my $line (@{$m_conn[$i]})
+	  {
+	    my @tmp = split('\t', $line);
+		my $tmp_size = @tmp;
+		if ($tmp_size != 2 && $good_flag == 1)
+		{
+		  $good_flag = 0;
+		  print "Nope! ".($i*$sep+$start)." disc spectrum\n";
+		}
+	  }
+	  
+	  if ($good_flag == 1)
+	  {
+	  
+		foreach my $line (@{$m_pbp[$i]})
+		{
+		 print $pbpfile ($i*$sep+$start)." ".$line."\n";
+		}
 
-      my $time_thing = $i*$sep+$start;
-      print $timefile "$time_thing $m_time[$i]\n";
+		foreach my $line (@{$m_conn[$i]})
+		{
+		 print $connfile ($i*$sep+$start)." ".$line."\n";
+		}
+
+		my $time_thing = $i*$sep+$start;
+		print $timefile "$time_thing $m_time[$i]\n";
+		}
    }
    else
    {
