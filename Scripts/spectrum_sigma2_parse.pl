@@ -158,20 +158,20 @@ foreach my $file (@allfiles)
 
    if (($orig_n_config - $start) % $sep != 0)
     {
-      print "Skipping config $orig_n_config b/c it's not consistent with the step size.\n";
+      #print "Skipping config $orig_n_config b/c it's not consistent with the step size.\n";
       next; 
      }
 
     if ($n_config < 0)
     {
-      print "Skipping config $orig_n_config b/c it's before config $start.\n";
+      #print "Skipping config $orig_n_config b/c it's before config $start.\n";
       next;
     }
 
     # Check and see if we've gone past the last config.
     if ($stop != -1 && $orig_n_config > $stop)
     {
-      print "Skipping config $orig_n_config b/c it's beyond $stop.\n";
+      #print "Skipping config $orig_n_config b/c it's beyond $stop.\n";
       next;
     }
 
