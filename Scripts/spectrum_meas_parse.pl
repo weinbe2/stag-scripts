@@ -7,22 +7,17 @@ use Switch;
 
 # call: ./spectrum_meas_parse.pl f4plus8l24t48b30m005m020 20 20
 
-if (@ARGV != 3) {
-   die "Inappropriate number of arguments: expected connected_check.pl [directory] [start] [space]\n";
+if (@ARGV != 3 && @ARGV != 4) {
+   die "Inappropriate number of arguments: expected spectrum_meas_parse.pl [directory] [start] [space] {optional stop}\n";
 }
 
 my $direc = $ARGV[0];
 my $start = $ARGV[1];
 my $sep = $ARGV[2];
-my $del_flag = 0;
-
-# Old code to delete runs that don't match the spacing.
-
-#if (@ARGV == 5)
-#{
-#	$del_flag = $ARGV[4];
-#}
-
+my $stop = -1;
+if (@ARGV == 4) {
+  $stop = $ARGV[3];
+}
 
 my $run = $direc;
 # This can change on different systems. 
@@ -220,11 +215,24 @@ foreach my $file (@allfiles)
 	# Assume a separation of 10.
 	$n_config = ($n_config-$start)/$sep;
 
-	if (($orig_n_config - $start) % $sep != 0 || $n_config < 0)
-        {
-           print "NOPE: $orig_n_config\n";
-           next; 
+	if (($orig_n_config - $start) % $sep != 0)
+  {
+    print "Skipping config $orig_n_config b/c it's not consistent with the step size.\n";
+    next; 
 	}
+
+  if ($n_config < 0)
+  {
+    print "Skipping config $orig_n_config b/c it's before config $start.\n";
+    next;
+  }
+
+  # Check and see if we've gone past the last config.
+  if ($stop != -1 && $orig_n_config > $stop)
+  {
+    print "Skipping config $orig_n_config b/c it's beyond $stop.\n";
+    next;
+  }
 
 
 	open(my $filething, "<".$file);
@@ -307,12 +315,6 @@ foreach my $file (@allfiles)
 	if (!(exists $pion_lines[0]) || !((exists $rho_lines[0]) || (exists $rho_milc_lines[0])) || !(exists $baryon_lines[0]) || !(exists $rwall_lines[0])) # || !(@m_time_lines == 2))
 	{
 		print "File $orig_n_config doesn't exist.\n";
-		if ($del_flag != 0)
-		{
-			my $tmp_command = "rm -rf $file";
-			print $tmp_command."\n";
-			`$tmp_command`;
-		}
 	}
 	else
 	{
